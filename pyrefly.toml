@@ -1,0 +1,8 @@
+search_path = ["backend"]
+
+[errors]
+missing-import = false
+missing-attribute = false
+bad-override = false
+bad-override-mutable-attribute = false
+untyped-import = false

@@ -1,0 +1,13 @@
+[tool.pyrefly]
+search_path = ["backend"]
+disable-search-path-heuristics = false
+
+[tool.pyrefly.errors]
+missing-import = false
+missing-attribute = false
+bad-override = false
+bad-override-mutable-attribute = false
+untyped-import = false
+
+[tool.django-stubs]
+django_settings_module = "config.settings.dev"

@@ -1,0 +1,23 @@
+# Virtual environments
+.venv/
+backend/venv/
+venv/
+
+# Local database & media uploads
+*.sqlite3
+backend/media/
+media/
+
+# Environment files
+.env
+.env.local
+
+# Python bytecode & cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Node modules & build outputs
+frontend/node_modules/
+frontend/dist/
