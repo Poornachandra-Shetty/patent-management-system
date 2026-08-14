@@ -78,12 +78,11 @@ Register a new user account.
   "password": "securepass123",
   "usn_or_emp_id": "USN2026099",
   "mobile": "9876543299",
-  "role": "applicant",
   "department": 1
 }
 ```
 
-> **`role` choices:** `applicant` | `scrutinizer` | `consultant` | `admin`  
+> Public registration always creates an **applicant** account. Staff roles (`scrutinizer`, `consultant`, `admin`) are assigned by administrators only.  
 > **`department`:** integer ID from `/departments/`
 
 **Response `201 Created`:**
@@ -94,10 +93,11 @@ Register a new user account.
   "email": "john@college.edu",
   "usn_or_emp_id": "USN2026099",
   "mobile": "9876543299",
-  "role": "applicant",
   "department": 1
 }
 ```
+
+> The response does not include `role`; the account is always created as `applicant`.
 
 ---
 
@@ -206,7 +206,7 @@ List patent applications (role-scoped).
 [
   {
     "id": 1,
-    "patent_id": "PAT-CSE-2026-0001",
+    "patent_id": "PAT-2026-CSE-001",
     "applicant": 4,
     "applicant_detail": {
       "id": 4,
@@ -285,7 +285,7 @@ Get full detail of a single patent application.
 ```json
 {
   "id": 1,
-  "patent_id": "PAT-CSE-2026-0001",
+  "patent_id": "PAT-2026-CSE-001",
   "applicant": 4,
   "applicant_detail": { "..." },
   "assigned_to": null,
@@ -336,22 +336,31 @@ Delete a patent application.
 Transition a `draft` application to `submitted`. No request body needed.
 
 **Auth required:** Yes  
-**Constraint:** Patent must currently be in `draft` status.
+**Constraint:** Patent must currently be in `draft` status. Caller must be the patent owner (applicant).
+
+This endpoint delegates to the workflow service and creates a `WorkflowEvent` audit record.
 
 **Response `200 OK`:**
 ```json
 {
   "id": 1,
-  "patent_id": "PAT-CSE-2026-0001",
+  "patent_id": "PAT-2026-CSE-001",
   "status": "submitted",
   "..."
 }
 ```
 
-**Response `400 Bad Request` (if not draft):**
+**Response `400 Bad Request` (if not draft or already terminal):**
 ```json
 {
-  "detail": "Only draft applications can be submitted."
+  "detail": "Patent is already in a terminal state: approved."
+}
+```
+
+**Response `403 Forbidden` (if not the owner):**
+```json
+{
+  "detail": "You do not have permission to transition this patent application."
 }
 ```
 
@@ -512,6 +521,117 @@ Delete a remark.
 
 ---
 
+## 6. Workflow
+
+Patent status transitions are role-gated and logged as immutable `WorkflowEvent` records.
+
+**Status flow:**
+```
+draft → submitted → under_scrutiny → forwarded_to_consultant → approved | rejected
+```
+
+| Role | Allowed transitions |
+|---|---|
+| `applicant` | `draft` → `submitted` (own patents only) |
+| `scrutinizer` | `submitted` → `under_scrutiny` \| `rejected`; `under_scrutiny` → `forwarded_to_consultant` \| `rejected` |
+| `consultant` | `forwarded_to_consultant` → `approved` \| `rejected` (assigned patents only) |
+| `admin` | All of the above |
+
+---
+
+### GET `/workflow/{patent_id}/allowed/`
+Return the transitions the current user may perform on this patent.
+
+**Auth required:** Yes
+
+**Response `200 OK`:**
+```json
+{
+  "patent_id": "PAT-2026-CSE-001",
+  "current_status": "submitted",
+  "allowed_transitions": ["under_scrutiny", "rejected"],
+  "is_terminal": false
+}
+```
+
+---
+
+### POST `/workflow/{patent_id}/transition/`
+Perform a status transition. All staff-side actions (scrutiny, forward, approve, reject) use this endpoint.
+
+**Auth required:** Yes
+
+**Request body:**
+```json
+{
+  "to_status": "forwarded_to_consultant",
+  "note": "Prior art check complete.",
+  "consultant_id": 3
+}
+```
+
+> `consultant_id` is **required** when `to_status` is `forwarded_to_consultant`.  
+> `note` is optional.
+
+**Response `200 OK`:**
+```json
+{
+  "id": 1,
+  "patent_id": "PAT-2026-CSE-001",
+  "application": 1,
+  "performed_by": 2,
+  "performed_by_name": "Dr. Scrutinizer Specialist",
+  "from_status": "under_scrutiny",
+  "to_status": "forwarded_to_consultant",
+  "note": "Prior art check complete.",
+  "created_at": "2026-08-14T09:00:00Z"
+}
+```
+
+**Response `403 Forbidden`:**
+```json
+{
+  "detail": "Transition to 'approved' is not allowed from 'submitted' for role 'scrutinizer'. Allowed transitions: ['under_scrutiny', 'rejected']"
+}
+```
+
+---
+
+### GET `/workflow/{patent_id}/history/`
+Full transition history for a patent, newest first. Access is scoped by role (applicants see own patents; consultants see assigned patents).
+
+**Auth required:** Yes
+
+**Response `200 OK`:**
+```json
+[
+  {
+    "id": 2,
+    "patent_id": "PAT-2026-CSE-001",
+    "application": 1,
+    "performed_by": 2,
+    "performed_by_name": "Dr. Scrutinizer Specialist",
+    "from_status": "submitted",
+    "to_status": "under_scrutiny",
+    "note": "",
+    "created_at": "2026-08-14T10:00:00Z"
+  },
+  {
+    "id": 1,
+    "patent_id": "PAT-2026-CSE-001",
+    "application": 1,
+    "performed_by": 4,
+    "performed_by_name": "Ananya Student",
+    "from_status": "draft",
+    "to_status": "submitted",
+    "note": "Application submitted by applicant.",
+    "created_at": "2026-08-14T09:00:00Z"
+  }
+]
+```
+
+---
+
 ## Common Error Responses
 
 | Status | Meaning |
@@ -537,6 +657,5 @@ These URL prefixes exist but return `404` — they'll be built in a future sprin
 
 | Prefix | Planned feature |
 |---|---|
-| `/api/v1/workflow/` | Patent status transition history |
 | `/api/v1/audit/` | Full audit log of who did what |
 | `/api/v1/notifications/` | In-app notifications per user |

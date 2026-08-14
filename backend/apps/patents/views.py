@@ -8,8 +8,10 @@ from apps.patents.models import PatentApplication, PatentApplicationStatus
 from apps.patents.serializers import (
     PatentApplicationListSerializer,
     PatentApplicationDetailSerializer,
-    PatentApplicationCreateSerializer
+    PatentApplicationCreateSerializer,
 )
+from apps.workflow.exceptions import WorkflowError, http_status_for
+from apps.workflow.services import transition_patent
 
 class PatentApplicationViewSet(viewsets.ModelViewSet):
     queryset = PatentApplication.objects.select_related('applicant', 'department', 'assigned_to').all()
@@ -40,14 +42,18 @@ class PatentApplicationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):
-        """Transition status from draft to submitted"""
+        """Transition status from draft to submitted via the workflow service."""
         patent = self.get_object()
-        if patent.status != PatentApplicationStatus.DRAFT:
-            return Response(
-                {"detail": "Only draft applications can be submitted."},
-                status=status.HTTP_400_BAD_REQUEST
+
+        try:
+            transition_patent(
+                patent=patent,
+                to_status=PatentApplicationStatus.SUBMITTED,
+                performed_by=request.user,
             )
-        patent.status = PatentApplicationStatus.SUBMITTED
-        patent.save()
+        except WorkflowError as exc:
+            return Response({'detail': str(exc)}, status=http_status_for(exc))
+
+        patent.refresh_from_db()
         serializer = PatentApplicationDetailSerializer(patent)
         return Response(serializer.data)

@@ -19,9 +19,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'usn_or_emp_id', 'email', 'mobile', 'role', 'department', 'password']
+        fields = ['id', 'name', 'usn_or_emp_id', 'email', 'mobile', 'department', 'password']
+        read_only_fields = ['id']
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        user = User.objects.create_user(password=password, **validated_data)
+        # Public self-registration always creates applicant accounts.
+        user = User.objects.create_user(password=password, role='applicant', **validated_data)
         return user
