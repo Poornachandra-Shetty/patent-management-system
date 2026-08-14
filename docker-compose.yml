@@ -25,7 +25,7 @@ services:
     environment:
       - DEBUG=True
       - DJANGO_SETTINGS_MODULE=config.settings.dev
-      - DB_HOST=db
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/patent_db
     depends_on:
       - db
 

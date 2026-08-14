@@ -3,8 +3,9 @@ from typing import TypedDict
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from apps.departments.models import Department
-from apps.patents.models import PatentApplication, PatentApplicationStatus, Inventor
+from apps.patents.models import PatentApplication, PatentApplicationStatus, Inventor, PatentIDCounter
 from apps.reviews.models import Remark, RemarkAction
+from apps.workflow.models import WorkflowEvent
 
 User = get_user_model()
 
@@ -108,7 +109,7 @@ class Command(BaseCommand):
         # 3. Create Sample Patents
         patents_data = [
             {
-                'patent_id': 'PAT-CSE-2026-0001',
+                'patent_id': 'PAT-2026-CSE-001',
                 'applicant': users['applicant_USN2026001'],
                 'department': departments['CSE'],
                 'title': 'AI-Driven Autonomous Crop Health Monitoring Drone System',
@@ -121,7 +122,7 @@ class Command(BaseCommand):
                 'status': PatentApplicationStatus.SUBMITTED,
             },
             {
-                'patent_id': 'PAT-ECE-2026-0001',
+                'patent_id': 'PAT-2026-ECE-001',
                 'applicant': users['applicant_USN2026001'],
                 'assigned_to': users['consultant_EMP003'],
                 'department': departments['ECE'],
@@ -135,7 +136,7 @@ class Command(BaseCommand):
                 'status': PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
             },
             {
-                'patent_id': 'PAT-MECH-2026-0001',
+                'patent_id': 'PAT-2026-MECH-001',
                 'applicant': users['applicant_EMP101'],
                 'department': departments['MECH'],
                 'title': 'Variable-Geometry Regenerative Braking Mechanism for Electric Vehicles',
@@ -162,7 +163,41 @@ class Command(BaseCommand):
                     department=patent.department,
                     is_primary_inventor=True
                 )
-                if patent.status == PatentApplicationStatus.FORWARDED_TO_CONSULTANT:
+                PatentIDCounter.objects.update_or_create(
+                    department=patent.department,
+                    year=2026,
+                    defaults={'last_sequence': 1},
+                )
+                if patent.status == PatentApplicationStatus.SUBMITTED:
+                    WorkflowEvent.objects.create(
+                        application=patent,
+                        performed_by=patent.applicant,
+                        from_status=PatentApplicationStatus.DRAFT,
+                        to_status=PatentApplicationStatus.SUBMITTED,
+                        note='Application submitted by applicant.',
+                    )
+                elif patent.status == PatentApplicationStatus.FORWARDED_TO_CONSULTANT:
+                    WorkflowEvent.objects.create(
+                        application=patent,
+                        performed_by=patent.applicant,
+                        from_status=PatentApplicationStatus.DRAFT,
+                        to_status=PatentApplicationStatus.SUBMITTED,
+                        note='Application submitted by applicant.',
+                    )
+                    WorkflowEvent.objects.create(
+                        application=patent,
+                        performed_by=users['scrutinizer_EMP002'],
+                        from_status=PatentApplicationStatus.SUBMITTED,
+                        to_status=PatentApplicationStatus.UNDER_SCRUTINY,
+                        note='Moved to scrutiny queue.',
+                    )
+                    WorkflowEvent.objects.create(
+                        application=patent,
+                        performed_by=users['scrutinizer_EMP002'],
+                        from_status=PatentApplicationStatus.UNDER_SCRUTINY,
+                        to_status=PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
+                        note='Forwarded to external consultant.',
+                    )
                     Remark.objects.create(
                         application=patent,
                         user=users['scrutinizer_EMP002'],
@@ -171,6 +206,34 @@ class Command(BaseCommand):
                         visible_to_applicant=True
                     )
                 elif patent.status == PatentApplicationStatus.APPROVED:
+                    WorkflowEvent.objects.create(
+                        application=patent,
+                        performed_by=patent.applicant,
+                        from_status=PatentApplicationStatus.DRAFT,
+                        to_status=PatentApplicationStatus.SUBMITTED,
+                        note='Application submitted by applicant.',
+                    )
+                    WorkflowEvent.objects.create(
+                        application=patent,
+                        performed_by=users['scrutinizer_EMP002'],
+                        from_status=PatentApplicationStatus.SUBMITTED,
+                        to_status=PatentApplicationStatus.UNDER_SCRUTINY,
+                        note='Moved to scrutiny queue.',
+                    )
+                    WorkflowEvent.objects.create(
+                        application=patent,
+                        performed_by=users['scrutinizer_EMP002'],
+                        from_status=PatentApplicationStatus.UNDER_SCRUTINY,
+                        to_status=PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
+                        note='Forwarded to external consultant.',
+                    )
+                    WorkflowEvent.objects.create(
+                        application=patent,
+                        performed_by=users['consultant_EMP003'],
+                        from_status=PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
+                        to_status=PatentApplicationStatus.APPROVED,
+                        note='Approved for IPO filing.',
+                    )
                     Remark.objects.create(
                         application=patent,
                         user=users['consultant_EMP003'],

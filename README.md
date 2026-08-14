@@ -21,8 +21,11 @@ patent-management-system/
 │   │   ├── authentication/   # User accounts, JWT auth & Custom User model
 │   │   ├── departments/      # College department master data & serializers
 │   │   ├── patents/          # Patent application lifecycle & ID generator
+│   │   ├── workflow/         # Role-gated status transitions & event history
 │   │   ├── reviews/          # Scrutinizer/Consultant review remarks & feedback
 │   │   ├── documents/        # File attachments & disclosures
+│   │   ├── audit/            # Audit log (planned)
+│   │   ├── notifications/    # In-app notifications (planned)
 │   │   └── common/           # Shared utilities
 │   ├── config/               # Django Settings (dev.py, prod.py, base.py)
 │   ├── manage.py             # Django CLI management script
