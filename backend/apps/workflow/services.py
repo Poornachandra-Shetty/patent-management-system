@@ -24,6 +24,31 @@ from apps.workflow.state_machine import TERMINAL_STATES, can_transition, get_all
 User = get_user_model()
 
 
+def _create_status_change_notifications(
+    patent: PatentApplication,
+    from_status: str,
+    to_status: str,
+    performed_by: User,
+    note: str = '',
+) -> None:
+    """
+    Create notifications for a patent status change.
+    Isolated in a helper to avoid circular imports and keep service clean.
+    """
+    try:
+        from apps.notifications.services import create_status_change_notification
+        create_status_change_notification(
+            patent=patent,
+            from_status=from_status,
+            to_status=to_status,
+            performed_by=performed_by,
+            note=note,
+        )
+    except ImportError:
+        # Notifications app not available
+        pass
+
+
 @transaction.atomic
 def transition_patent(
     *,
@@ -94,10 +119,21 @@ def transition_patent(
     locked_patent.status = to_status
     locked_patent.save(update_fields=update_fields)
 
-    return WorkflowEvent.objects.create(
+    workflow_event = WorkflowEvent.objects.create(
         application=locked_patent,
         performed_by=performed_by,
         from_status=from_status,
         to_status=to_status,
         note=note,
     )
+
+    # Create notifications for status change
+    _create_status_change_notifications(
+        patent=locked_patent,
+        from_status=from_status,
+        to_status=to_status,
+        performed_by=performed_by,
+        note=note,
+    )
+
+    return workflow_event
