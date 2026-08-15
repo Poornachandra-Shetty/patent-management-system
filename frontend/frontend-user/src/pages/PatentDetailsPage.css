@@ -1,0 +1,121 @@
+/* PatentDetailsPage Styles */
+
+.patent-details-page {
+  padding: var(--space-xl) 0;
+}
+
+/* Breadcrumb */
+.patent-details-page__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);
+  font-size: var(--font-size-sm);
+}
+
+.patent-details-page__breadcrumb-link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.patent-details-page__breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.patent-details-page__breadcrumb-separator {
+  color: var(--color-text-muted);
+}
+
+.patent-details-page__breadcrumb-current {
+  color: var(--color-text-secondary);
+}
+
+/* Loading State */
+.patent-details-page__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: var(--space-md);
+  color: var(--color-text-muted);
+}
+
+.patent-details-page__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.patent-details-page__error {
+  text-align: center;
+}
+
+.patent-details-page__error-content h2 {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.patent-details-page__error-content p {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-lg) 0;
+}
+
+.patent-details-page__error-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+/* Overlay */
+.patent-details-page__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+}
+
+.patent-details-page__overlay-content {
+  background: white;
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.patent-details-page__overlay-content p {
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Section */
+.patent-details-page__section {
+  margin-top: var(--space-xl);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .patent-details-page__error-actions {
+    flex-direction: column;
+  }
+}

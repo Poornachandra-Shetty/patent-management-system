@@ -1,0 +1,25 @@
+/* Container Component Styles */
+
+.container {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Sizes */
+.container--small {
+  max-width: 640px;
+}
+
+.container--default {
+  max-width: 1200px;
+}
+
+.container--large {
+  max-width: 1400px;
+}
+
+.container--full {
+  max-width: 100%;
+}
