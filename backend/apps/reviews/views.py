@@ -8,7 +8,15 @@ class RemarkViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        remark = serializer.save(user=self.request.user)
+
+        # Create notification for remark
+        try:
+            from apps.notifications.services import create_remark_notification
+            create_remark_notification(remark=remark)
+        except ImportError:
+            # Notifications app not available
+            pass
 
     def get_queryset(self):
         user = self.request.user
