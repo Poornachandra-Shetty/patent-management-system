@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from apps.departments.serializers import DepartmentSerializer
 
 User = get_user_model()
@@ -12,6 +13,15 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'name', 'usn_or_emp_id', 'email', 'mobile', 'role', 'department', 'department_detail', 'created_at']
         read_only_fields = ['id', 'created_at']
+
+
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'email'
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user'] = UserSerializer(self.user).data
+        return data
 
 
 class RegisterSerializer(serializers.ModelSerializer):

@@ -1,0 +1,101 @@
+/* RemarkCard Component Styles */
+
+.remark-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: box-shadow 0.2s;
+}
+
+.remark-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.remark-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.remark-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.remark-card__reviewer {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.remark-card__role {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.remark-card__info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.remark-card__date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.remark-card__visibility {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.remark-card__visibility--applicant {
+  background-color: #dbeafe;
+  color: #0c4a6e;
+}
+
+.remark-card__visibility--internal {
+  background-color: #fee2e2;
+  color: #7f1d1d;
+}
+
+.remark-card__content {
+  margin-bottom: 1rem;
+}
+
+.remark-card__text {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.remark-card__status {
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.remark-card__status-label {
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.remark-card__status-value {
+  color: #3b82f6;
+  font-weight: 500;
+}
