@@ -1,0 +1,49 @@
+/* LoginPage Styles */
+
+.login-page {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) 0;
+}
+
+.login-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.login-page__header {
+  text-align: center;
+}
+
+.login-page__brand {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 var(--space-xs) 0;
+  letter-spacing: 0.05em;
+}
+
+.login-page__tagline {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.login-page__info {
+  text-align: center;
+  padding: var(--space-lg);
+  background-color: var(--color-primary-light);
+  border-radius: var(--radius-md);
+}
+
+.login-page__info p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
