@@ -1,3 +1,4 @@
+from typing import Any, cast
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -18,8 +19,8 @@ class UserSerializer(serializers.ModelSerializer):
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'email'
 
-    def validate(self, attrs):
-        data = super().validate(attrs)
+    def validate(self, attrs) -> dict[str, Any]:
+        data = cast(dict[str, Any], super().validate(attrs))
         data['user'] = UserSerializer(self.user).data
         return data
 
