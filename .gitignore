@@ -21,6 +21,9 @@ __pycache__/
 # Node modules & build outputs
 frontend/node_modules/
 frontend/dist/
+
+# Vite temp/cache files
+frontend/vite.config.js.timestamp-*
 # Logs
 logs
 *.log

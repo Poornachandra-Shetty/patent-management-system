@@ -8,7 +8,21 @@ import { ChevronDown, Search, UserCircle2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import './Navbar.css'
 
-function Navbar({ isLoggedIn = false, userName = '', onLogout }) {
+function Navbar({ isLoggedIn = false, userName = '', user, onLogout }) {
+  const getRoleLabel = () => {
+    if (!user) return ''
+    if (user.role === 'admin') return 'Admin'
+    if (user.role === 'scrutinizer') return 'Scrutinizer'
+    if (user.role === 'consultant') return 'Consultant'
+
+    // For applicant role, distinguish between student and faculty
+    const id = user.usn_or_emp_id || ''
+    if (id.toUpperCase().startsWith('USN')) {
+      return 'Student'
+    }
+    return 'Faculty'
+  }
+
   return (
     <header className="navbar">
       <div className="navbar__container">
@@ -38,7 +52,7 @@ function Navbar({ isLoggedIn = false, userName = '', onLogout }) {
                 </div>
                 <div className="navbar__user-copy">
                   <span className="navbar__user-name">{userName || 'User'}</span>
-                  <span className="navbar__user-role">Faculty</span>
+                  <span className="navbar__user-role">{getRoleLabel()}</span>
                 </div>
                 <ChevronDown size={16} />
               </div>

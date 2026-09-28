@@ -38,22 +38,23 @@ function DashboardPage() {
     
     if (result.success) {
       // Handle API response structure
+      // DRF pagination: { count, results: [] }
+      // or legacy: { patents: [] }
+      // or raw array: []
       const responseData = result.data
-      
-      // Check if response has patents array or is the array itself
-      const patentList = responseData.patents || responseData || []
+      const patentList = responseData.results || responseData.patents || (Array.isArray(responseData) ? responseData : [])
       const responseStats = responseData.stats || null
-      
+
       setPatents(patentList)
-      
+
       // Calculate stats from patents if not provided by API
       if (responseStats) {
         setStats(responseStats)
       } else if (Array.isArray(patentList)) {
         const calculatedStats = {
-          total: patentList.length,
+          total: responseData.count ?? patentList.length,
           drafts: patentList.filter(p => p.status === 'draft').length,
-          under_review: patentList.filter(p => 
+          under_review: patentList.filter(p =>
             ['submitted', 'under_scrutiny', 'forwarded_to_consultant'].includes(p.status)
           ).length,
           approved: patentList.filter(p => p.status === 'approved').length,
