@@ -125,19 +125,22 @@ class PatentManagementTestCase(APITestCase):
         self.assertTrue(PatentApplication.objects.filter(pk=patent.pk).exists())
 
 
-class ConcurrentPatentIDGenerationTestCase(TransactionTestCase):
-    def test_concurrent_id_generation_no_duplicates(self):
-        department = Department.objects.create(name="Computer Science", code="CS")
+import unittest
 
-        if connection.vendor != 'postgresql':
-            # SQLite does not support concurrent write transactions; verify atomic sequential generation
-            generated_ids = [generate_patent_id(department) for _ in range(5)]
-            self.assertEqual(len(generated_ids), 5)
-            self.assertEqual(len(set(generated_ids)), 5)
-            for i in range(1, 6):
-                expected_suffix = str(i).zfill(3)
-                self.assertTrue(generated_ids[i - 1].endswith(expected_suffix))
-            return
+
+class PatentIDGenerationTestCase(TransactionTestCase):
+    def test_sequential_id_generation(self):
+        department = Department.objects.create(name="Computer Science", code="CS")
+        generated_ids = [generate_patent_id(department) for _ in range(5)]
+        self.assertEqual(len(generated_ids), 5)
+        self.assertEqual(len(set(generated_ids)), 5)
+        for i in range(1, 6):
+            expected_suffix = str(i).zfill(3)
+            self.assertTrue(generated_ids[i - 1].endswith(expected_suffix))
+
+    @unittest.skipUnless(connection.vendor == 'postgresql', 'Requires PostgreSQL row-level locks for concurrent thread testing')
+    def test_concurrent_id_generation_no_duplicates_on_postgresql(self):
+        department = Department.objects.create(name="Information Science", code="IS")
 
         def worker():
             connection.close()
