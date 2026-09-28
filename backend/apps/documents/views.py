@@ -1,6 +1,5 @@
 import mimetypes
 import os
-import magic
 from django.http import FileResponse, Http404
 from django.utils.text import get_valid_filename
 from rest_framework import viewsets, permissions, status
@@ -11,6 +10,7 @@ from rest_framework.exceptions import PermissionDenied
 from apps.documents.models import Document, PublicDocument
 from apps.documents.serializers import DocumentSerializer, PublicDocumentSerializer
 from apps.documents.permissions import CanAccessDocument
+from apps.documents.validators import detect_and_validate_mime_type
 from apps.patents.models import PatentApplication, PatentApplicationStatus
 
 
@@ -58,10 +58,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         file_size = uploaded_file.size if uploaded_file else None
         mime_type = ''
         if uploaded_file:
-            uploaded_file.seek(0)
-            sample = uploaded_file.read(2048)
-            uploaded_file.seek(0)
-            mime_type = magic.from_buffer(sample, mime=True)
+            mime_type = detect_and_validate_mime_type(uploaded_file)
 
         serializer.save(
             uploaded_by=user,

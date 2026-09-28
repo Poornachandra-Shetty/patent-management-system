@@ -17,9 +17,15 @@ from apps.workflow.permissions import can_view_patent
 User = get_user_model()
 
 
-def get_audit_trail(patent: PatentApplication, user: User, max_entries: int = 500) -> list[dict[str, Any]]:
+def get_audit_trail(
+    patent: PatentApplication,
+    user: User,
+    limit: int | None = None,
+    offset: int = 0,
+    max_entries: int = 500,
+) -> list[dict[str, Any]]:
     """
-    Retrieve combined audit trail for a patent application.
+    Retrieve combined audit trail for a patent application with DB-level bounded queries.
 
     Returns a chronologically ordered list of audit entries (status changes + remarks).
     Only returns data the user is authorized to view.
@@ -27,6 +33,8 @@ def get_audit_trail(patent: PatentApplication, user: User, max_entries: int = 50
     Args:
         patent: PatentApplication instance
         user: User requesting the audit trail
+        limit: Optional page size for DB-level bounded querying
+        offset: Optional offset for pagination
         max_entries: Maximum number of events/remarks to query from DB (default 500)
 
     Returns:
@@ -39,14 +47,15 @@ def get_audit_trail(patent: PatentApplication, user: User, max_entries: int = 50
     if not can_view_patent(user, patent):
         return []
 
+    fetch_limit = min(offset + limit, max_entries) if limit is not None else max_entries
     audit_entries: list[dict[str, Any]] = []
 
-    # Fetch WorkflowEvent entries (status changes) with hard limit to avoid memory bloat
+    # Fetch WorkflowEvent entries (status changes) with DB limit
     workflow_events = (
         WorkflowEvent.objects
         .filter(application=patent)
         .select_related('performed_by', 'application')
-        .order_by('-created_at')[:max_entries]
+        .order_by('-created_at')[:fetch_limit]
     )
 
     for event in workflow_events:
@@ -68,7 +77,7 @@ def get_audit_trail(patent: PatentApplication, user: User, max_entries: int = 50
             'visible_to_applicant': True,  # Status changes are always visible
         })
 
-    # Fetch Remark entries with hard limit
+    # Fetch Remark entries with DB limit
     remarks_qs = (
         Remark.objects
         .filter(application=patent)
@@ -80,7 +89,7 @@ def get_audit_trail(patent: PatentApplication, user: User, max_entries: int = 50
         # Applicants only see remarks marked as visible_to_applicant
         remarks_qs = remarks_qs.filter(visible_to_applicant=True)
 
-    for remark in remarks_qs[:max_entries]:
+    for remark in remarks_qs[:fetch_limit]:
         audit_entries.append({
             'entry_id': remark.id,
             'entry_type': 'remark',
@@ -102,7 +111,28 @@ def get_audit_trail(patent: PatentApplication, user: User, max_entries: int = 50
     # Sort combined entries by timestamp, most recent first
     audit_entries.sort(key=lambda x: x['timestamp'], reverse=True)
 
-    return audit_entries
+    if limit is not None:
+        return audit_entries[offset:offset + limit]
+
+    return audit_entries[:max_entries]
+
+
+def get_audit_trail_count(patent: PatentApplication, user: User) -> int:
+    """
+    Get the total count of auditable entries for a patent application.
+    Uses efficient DB COUNT queries.
+    """
+    if not can_view_patent(user, patent):
+        return 0
+
+    events_count = WorkflowEvent.objects.filter(application=patent).count()
+
+    remarks_qs = Remark.objects.filter(application=patent)
+    if user.role == 'applicant':
+        remarks_qs = remarks_qs.filter(visible_to_applicant=True)
+    remarks_count = remarks_qs.count()
+
+    return events_count + remarks_count
 
 
 def get_patent_audits_for_user(user: User, limit: int = 50) -> QuerySet:

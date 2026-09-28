@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 
 from apps.patents.models import PatentApplication
 from apps.workflow.permissions import can_view_patent
-from apps.audit.selectors import get_audit_trail, get_patent_audits_for_user
+from apps.audit.selectors import get_audit_trail, get_audit_trail_count, get_patent_audits_for_user
 from apps.audit.serializers import AuditEntrySerializer
 
 
@@ -42,20 +42,22 @@ class AuditTrailView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        audit_entries = get_audit_trail(patent, request.user)
-        total_entries = len(audit_entries)
-
-        # Optional pagination support
         limit_param = request.query_params.get('limit')
         offset_param = request.query_params.get('offset')
+
+        limit = None
+        offset = 0
 
         if limit_param is not None:
             try:
                 limit = min(max(1, int(limit_param)), 500)
                 offset = max(0, int(offset_param or 0))
-                audit_entries = audit_entries[offset:offset + limit]
             except ValueError:
-                pass
+                limit = None
+                offset = 0
+
+        audit_entries = get_audit_trail(patent, request.user, limit=limit, offset=offset)
+        total_entries = get_audit_trail_count(patent, request.user)
 
         serializer = AuditEntrySerializer(audit_entries, many=True)
 
