@@ -1,3 +1,5 @@
+from datetime import timedelta
+from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 from .base import *
 
@@ -9,6 +11,20 @@ DATABASES = {
         cast=dj_database_url.parse
     )
 }
+
+# Reject SQLite as database engine in production
+if 'sqlite' in DATABASES['default'].get('ENGINE', '').lower():
+    raise ImproperlyConfigured("SQLite database engine is not permitted in production.")
+
+# Hardened JWT token lifetimes for production
+SIMPLE_JWT = {
+    **SIMPLE_JWT,
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+}
+
+# Strict CORS origin enforcement
+CORS_ALLOW_ALL_ORIGINS = False
+assert CORS_ALLOW_ALL_ORIGINS is False, "CORS_ALLOW_ALL_ORIGINS must be False in production."
 
 # Production Security Headers & SSL Hardening
 SECURE_BROWSER_XSS_FILTER = True
