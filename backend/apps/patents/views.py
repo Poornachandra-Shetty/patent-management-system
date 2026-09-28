@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
@@ -10,19 +11,21 @@ from apps.patents.serializers import (
     PatentApplicationDetailSerializer,
     PatentApplicationCreateSerializer,
 )
+from apps.patents.permissions import IsPatentOwnerOrReadOnly
 from apps.workflow.exceptions import WorkflowError, http_status_for
 from apps.workflow.services import transition_patent
 
+
 class PatentApplicationViewSet(viewsets.ModelViewSet):
-    queryset = PatentApplication.objects.select_related('applicant', 'department', 'assigned_to').all()
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = PatentApplication.objects.select_related('applicant', 'department', 'assigned_to').prefetch_related('inventors').all()
+    permission_classes = [permissions.IsAuthenticated, IsPatentOwnerOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'department', 'category']
     search_fields = ['patent_id', 'title', 'keywords', 'abstract']
     ordering_fields = ['created_at', 'updated_at', 'patent_id']
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action in ['create', 'update', 'partial_update']:
             return PatentApplicationCreateSerializer
         elif self.action in ['list']:
             return PatentApplicationListSerializer
@@ -30,15 +33,38 @@ class PatentApplicationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        role = getattr(user, 'role', '')
         queryset = super().get_queryset()
-        
-        # Role-based scoping
-        if user.role == 'applicant':
+
+        if role == 'admin' or user.is_staff or user.is_superuser:
+            return queryset
+        elif role == 'applicant':
             return queryset.filter(applicant=user)
-        elif user.role == 'consultant':
+        elif role == 'consultant':
             return queryset.filter(assigned_to=user)
-        # Scrutinizers & Admins can see all submitted/in-progress applications
-        return queryset
+        elif role == 'scrutinizer':
+            return queryset.exclude(status=PatentApplicationStatus.DRAFT)
+        return queryset.none()
+
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        user = self.request.user
+        role = getattr(user, 'role', '')
+
+        # Enforce state immutability
+        if role != 'admin' and instance.status not in (PatentApplicationStatus.DRAFT, 'scrutiny_rejected'):
+            raise PermissionDenied("Patent application cannot be modified while under formal evaluation.")
+
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        user = self.request.user
+        role = getattr(user, 'role', '')
+
+        if role != 'admin' and instance.status != PatentApplicationStatus.DRAFT:
+            raise PermissionDenied("Submitted or evaluated patent applications cannot be deleted.")
+
+        instance.delete()
 
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):
