@@ -46,6 +46,19 @@ class RemarkViewSet(viewsets.ModelViewSet):
         except ImportError:
             pass
 
+    def perform_update(self, serializer):
+        user = self.request.user
+        role = getattr(user, 'role', '')
+
+        if role == 'applicant':
+            # Ensure applicant cannot mutate action or visibility on update
+            serializer.save(
+                action=RemarkAction.COMMENT,
+                visible_to_applicant=True
+            )
+        else:
+            serializer.save()
+
     def get_queryset(self):
         user = self.request.user
         role = getattr(user, 'role', '')
