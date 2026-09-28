@@ -51,7 +51,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         if role == 'applicant':
             if application.applicant_id != user.pk:
                 raise PermissionDenied("You can only upload documents to your own patent applications.")
-            if application.status not in (PatentApplicationStatus.DRAFT, 'scrutiny_rejected', PatentApplicationStatus.SUBMITTED):
+            if application.status not in (PatentApplicationStatus.DRAFT, PatentApplicationStatus.SUBMITTED):
                 raise PermissionDenied("Cannot attach documents while application is under formal evaluation.")
 
         uploaded_file = serializer.validated_data.get('file') or self.request.FILES.get('file')

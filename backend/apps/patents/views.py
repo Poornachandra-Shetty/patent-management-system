@@ -52,7 +52,7 @@ class PatentApplicationViewSet(viewsets.ModelViewSet):
         role = getattr(user, 'role', '')
 
         # Enforce state immutability
-        if role != 'admin' and instance.status not in (PatentApplicationStatus.DRAFT, 'scrutiny_rejected'):
+        if role != 'admin' and instance.status != PatentApplicationStatus.DRAFT:
             raise PermissionDenied("Patent application cannot be modified while under formal evaluation.")
 
         serializer.save()

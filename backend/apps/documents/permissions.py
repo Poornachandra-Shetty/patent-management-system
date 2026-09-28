@@ -34,7 +34,7 @@ class CanAccessDocument(permissions.BasePermission):
             return False
 
         # Mutation operations (Update / Delete)
-        if obj.uploaded_by_id == user.pk and patent.status in (PatentApplicationStatus.DRAFT, 'scrutiny_rejected'):
+        if obj.uploaded_by_id == user.pk and patent.status == PatentApplicationStatus.DRAFT:
             return True
 
         return False

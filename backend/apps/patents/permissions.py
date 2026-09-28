@@ -38,5 +38,5 @@ class IsPatentOwnerOrReadOnly(permissions.BasePermission):
         if request.method == 'DELETE':
             return obj.status == PatentApplicationStatus.DRAFT
 
-        # Updates are restricted to DRAFT or revision/rejected states
-        return obj.status in (PatentApplicationStatus.DRAFT, 'scrutiny_rejected')
+        # Updates are strictly restricted to DRAFT status
+        return obj.status == PatentApplicationStatus.DRAFT
