@@ -26,6 +26,10 @@ class Remark(models.Model):
 
     class Meta:
         ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['application', 'created_at'], name='remark_app_created_idx'),
+            models.Index(fields=['application', 'visible_to_applicant', 'created_at'], name='remark_app_vis_created_idx'),
+        ]
 
     def __str__(self):
         return f"Remark by {self.user.name} on {self.application.patent_id}"

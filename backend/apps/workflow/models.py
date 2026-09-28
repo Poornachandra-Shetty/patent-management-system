@@ -40,6 +40,9 @@ class WorkflowEvent(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['application', '-created_at'], name='workflow_app_created_idx'),
+        ]
 
     def __str__(self) -> str:
         return (
