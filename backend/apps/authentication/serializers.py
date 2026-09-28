@@ -12,7 +12,27 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'usn_or_emp_id', 'email', 'mobile', 'role', 'department', 'department_detail', 'created_at']
+        fields = [
+            'id', 'name', 'usn_or_emp_id', 'email', 'mobile',
+            'role', 'department', 'department_detail',
+            'is_staff', 'is_superuser', 'created_at'
+        ]
+        read_only_fields = [
+            'id', 'role', 'email', 'usn_or_emp_id', 'department',
+            'is_staff', 'is_superuser', 'created_at'
+        ]
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    department_detail = DepartmentSerializer(source='department', read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'name', 'usn_or_emp_id', 'email', 'mobile',
+            'role', 'department', 'department_detail',
+            'is_active', 'is_staff', 'is_superuser', 'created_at'
+        ]
         read_only_fields = ['id', 'created_at']
 
 
