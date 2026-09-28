@@ -5,7 +5,6 @@ Read-only API endpoints for retrieving audit trails of patent applications.
 """
 
 from rest_framework import permissions, status
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
@@ -21,6 +20,7 @@ class AuditTrailView(APIView):
     GET /api/v1/audit/patents/{patent_id}/
 
     Retrieve the complete audit trail (status changes + remarks) for a patent application.
+    Supports optional pagination via ?limit= and ?offset= query parameters.
 
     Returns:
         - Chronologically ordered list of audit entries
@@ -34,20 +34,29 @@ class AuditTrailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, patent_id: str) -> Response:
-        # Fetch the patent application
         patent = get_object_or_404(PatentApplication, patent_id=patent_id)
 
-        # Check if user is authorized to view this patent's audit trail
         if not can_view_patent(request.user, patent):
             return Response(
                 {'detail': 'You do not have permission to view this patent application.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Get audit trail data
         audit_entries = get_audit_trail(patent, request.user)
+        total_entries = len(audit_entries)
 
-        # Serialize the entries
+        # Optional pagination support
+        limit_param = request.query_params.get('limit')
+        offset_param = request.query_params.get('offset')
+
+        if limit_param is not None:
+            try:
+                limit = min(max(1, int(limit_param)), 500)
+                offset = max(0, int(offset_param or 0))
+                audit_entries = audit_entries[offset:offset + limit]
+            except ValueError:
+                pass
+
         serializer = AuditEntrySerializer(audit_entries, many=True)
 
         return Response({
@@ -55,7 +64,7 @@ class AuditTrailView(APIView):
             'title': patent.title,
             'current_status': patent.status,
             'audit_trail': serializer.data,
-            'total_entries': len(audit_entries),
+            'total_entries': total_entries,
         })
 
 
@@ -64,6 +73,7 @@ class PatentAuditListView(APIView):
     GET /api/v1/audit/
 
     List patents for which the user can view audit trails.
+    Supports ?limit= query parameter (default 50, max 200).
 
     Returns:
         - List of patents the user has audit access to
@@ -76,10 +86,14 @@ class PatentAuditListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request) -> Response:
-        # Get patents where user has audit access
-        patents = get_patent_audits_for_user(request.user)
+        try:
+            limit = int(request.query_params.get('limit', 50))
+            limit = min(max(1, limit), 200)
+        except ValueError:
+            limit = 50
 
-        # Simple serialization of patent info
+        patents = get_patent_audits_for_user(request.user, limit=limit)
+
         patents_data = [
             {
                 'id': patent.id,
