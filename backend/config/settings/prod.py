@@ -6,7 +6,6 @@ DEBUG = False
 DATABASES = {
     'default': config(
         'DATABASE_URL',
-        default=f"postgres://{config('DB_USER', 'postgres')}:{config('DB_PASSWORD', 'postgres')}@{config('DB_HOST', 'localhost')}:{config('DB_PORT', '5432')}/{config('DB_NAME', 'patent_db')}",
         cast=dj_database_url.parse
     )
 }
