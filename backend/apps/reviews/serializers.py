@@ -5,6 +5,7 @@ from apps.authentication.serializers import UserSerializer
 
 class RemarkSerializer(serializers.ModelSerializer):
     user_detail = UserSerializer(source='user', read_only=True)
+    text = serializers.CharField(max_length=5000, min_length=1, trim_whitespace=True)
 
     class Meta:
         model = Remark

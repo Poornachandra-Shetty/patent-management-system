@@ -130,3 +130,16 @@ class ReviewsAndRemarksTestCase(APITestCase):
         # Ensure action and visible_to_applicant were not changed
         self.assertEqual(remark.action, RemarkAction.COMMENT)
         self.assertEqual(remark.visible_to_applicant, True)
+
+    def test_oversized_remark_text_rejected(self):
+        self.client.force_authenticate(user=self.applicant)
+        url = reverse("remark-list")
+        payload = {
+            "application": self.patent.id,
+            "text": "A" * 5001,
+            "action": RemarkAction.COMMENT,
+            "visible_to_applicant": True,
+        }
+        response = self.client.post(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
