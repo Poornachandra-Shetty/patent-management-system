@@ -1,6 +1,8 @@
 import mimetypes
 import os
+import magic
 from django.http import FileResponse, Http404
+from django.utils.text import get_valid_filename
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -52,11 +54,14 @@ class DocumentViewSet(viewsets.ModelViewSet):
             if application.status not in (PatentApplicationStatus.DRAFT, 'scrutiny_rejected', PatentApplicationStatus.SUBMITTED):
                 raise PermissionDenied("Cannot attach documents while application is under formal evaluation.")
 
-        uploaded_file = self.request.FILES.get('file')
+        uploaded_file = serializer.validated_data.get('file') or self.request.FILES.get('file')
         file_size = uploaded_file.size if uploaded_file else None
         mime_type = ''
         if uploaded_file:
-            mime_type = getattr(uploaded_file, 'content_type', '') or mimetypes.guess_type(uploaded_file.name)[0] or ''
+            uploaded_file.seek(0)
+            sample = uploaded_file.read(2048)
+            uploaded_file.seek(0)
+            mime_type = magic.from_buffer(sample, mime=True)
 
         serializer.save(
             uploaded_by=user,
@@ -78,11 +83,12 @@ class DocumentViewSet(viewsets.ModelViewSet):
         except (FileNotFoundError, OSError):
             raise Http404("Document file missing from storage backend.")
 
-        filename = os.path.basename(document.file.name)
-        content_type = document.mime_type or mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+        raw_filename = os.path.basename(document.file.name)
+        safe_filename = get_valid_filename(raw_filename)
+        content_type = document.mime_type or mimetypes.guess_type(safe_filename)[0] or 'application/octet-stream'
 
         response = FileResponse(file_handle, content_type=content_type)
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Content-Disposition'] = f'attachment; filename="{safe_filename}"'
         return response
 
 
@@ -105,9 +111,10 @@ class PublicDocumentViewSet(viewsets.ReadOnlyModelViewSet):
         except (FileNotFoundError, OSError):
             raise Http404("Document file missing from storage.")
 
-        filename = os.path.basename(doc.file.name)
-        content_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+        raw_filename = os.path.basename(doc.file.name)
+        safe_filename = get_valid_filename(raw_filename)
+        content_type = mimetypes.guess_type(safe_filename)[0] or 'application/octet-stream'
 
         response = FileResponse(file_handle, content_type=content_type)
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Content-Disposition'] = f'attachment; filename="{safe_filename}"'
         return response
