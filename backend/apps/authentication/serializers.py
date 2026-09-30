@@ -1,8 +1,20 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from apps.departments.serializers import DepartmentSerializer
 
 User = get_user_model()
+
+
+class SJECTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        email = attrs.get(self.username_field)
+        if not isinstance(email, str) or not email.endswith('@sjec.ac.in'):
+            raise serializers.ValidationError({
+                'email': 'Only email addresses ending with @sjec.ac.in may log in.'
+            })
+
+        return super().validate(attrs)
 
 
 class UserSerializer(serializers.ModelSerializer):
