@@ -1,5 +1,5 @@
 from django.db import models, transaction
-from datetime import datetime
+from django.utils import timezone
 
 class PatentIDCounter(models.Model):
     department = models.ForeignKey('departments.Department', on_delete=models.CASCADE, related_name='id_counters')
@@ -18,7 +18,7 @@ def generate_patent_id(department):
     Generates a unique atomic Patent ID like PAT-2026-CSE-001.
     Uses select_for_update() to prevent race conditions during concurrent submissions.
     """
-    current_year = datetime.now().year
+    current_year = timezone.now().year
     with transaction.atomic():
         counter, created = PatentIDCounter.objects.select_for_update().get_or_create(
             department=department,

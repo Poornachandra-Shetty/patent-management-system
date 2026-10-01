@@ -304,3 +304,21 @@ class AuditTrailTestCase(TestCase):
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get('/api/v1/audit/')
         self.assertEqual(response.data['total'], 1)
+
+    def test_audit_trail_pagination(self):
+        """Test that limit and offset parameters paginate audit trail entries."""
+        for i in range(5):
+            WorkflowEvent.objects.create(
+                application=self.patent,
+                performed_by=self.applicant_user,
+                from_status=PatentApplicationStatus.DRAFT,
+                to_status=PatentApplicationStatus.SUBMITTED,
+                note=f"Note {i}"
+            )
+
+        self.client.force_authenticate(user=self.applicant_user)
+        response = self.client.get(f'/api/v1/audit/patents/{self.patent.patent_id}/?limit=2&offset=1')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['total_entries'], 5)
+        self.assertEqual(len(response.data['audit_trail']), 2)
+

@@ -43,13 +43,22 @@ function AppContent() {
   }
 
   const userRole = user?.role
-  const showAdminItem = userRole === USER_ROLES.ADMIN
+  const isStaff = [USER_ROLES.ADMIN, USER_ROLES.SCRUTINIZER, USER_ROLES.CONSULTANT].includes(userRole)
+
+  const filteredSidebarItems = sidebarItems.filter((item) => {
+    // Hide "Patents" (which opens New Patent form) from reviewers/admins
+    if (item.label === 'Patents' && isStaff) return false
+    // Hide "Reviews" from applicants (student/faculty)
+    if (item.label === 'Reviews' && !isStaff) return false
+    return true
+  })
 
   return (
     <div className="app">
       <Navbar
         isLoggedIn={isAuthenticated}
         userName={user?.name || ''}
+        user={user}
         onLogout={handleLogout}
       />
 
@@ -65,7 +74,7 @@ function AppContent() {
             </div>
 
             <nav className="sidebar__nav">
-              {sidebarItems.map(({ label, to, icon: Icon }) => (
+              {filteredSidebarItems.map(({ label, to, icon: Icon }) => (
                 <NavLink
                   key={label}
                   to={to}
@@ -77,18 +86,6 @@ function AppContent() {
                   <span>{label}</span>
                 </NavLink>
               ))}
-
-              {showAdminItem && (
-                <NavLink
-                  to="/admin/dashboard"
-                  className={({ isActive }) =>
-                    ['sidebar__item', isActive ? 'sidebar__item--active' : ''].filter(Boolean).join(' ')
-                  }
-                >
-                  <span className="sidebar__icon"><Users size={18} /></span>
-                  <span>Users</span>
-                </NavLink>
-              )}
 
               <NavLink
                 to="/dashboard"

@@ -3,6 +3,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import AbstractBaseUser
+from typing import cast
 
 from apps.patents.models import PatentApplication
 from apps.workflow.exceptions import WorkflowError, http_status_for
@@ -42,6 +44,7 @@ class TransitionView(APIView):
 
     def post(self, request: Request, patent_id: str) -> Response:
         patent = get_object_or_404(PatentApplication, patent_id=patent_id)
+        user = cast(AbstractBaseUser, request.user)
 
         serializer = TransitionRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -50,7 +53,7 @@ class TransitionView(APIView):
             event = transition_patent(
                 patent=patent,
                 to_status=serializer.validated_data['to_status'],
-                performed_by=request.user,
+                performed_by=user,
                 note=serializer.validated_data.get('note', ''),
                 consultant_id=serializer.validated_data.get('consultant_id'),
             )
@@ -71,17 +74,18 @@ class AllowedTransitionsView(APIView):
 
     def get(self, request: Request, patent_id: str) -> Response:
         patent = get_object_or_404(PatentApplication, patent_id=patent_id)
+        user = cast(AbstractBaseUser, request.user)
 
-        if not can_view_patent(request.user, patent):
+        if not can_view_patent(user, patent):
             return Response(
                 {'detail': 'You do not have permission to view this patent application.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        role: str = request.user.role  # type: ignore[union-attr]
+        role: str = user.role  # type: ignore[union-attr]
         allowed = get_allowed_transitions(patent.status, role)
 
-        if not can_act_on_patent(request.user, patent):
+        if not can_act_on_patent(user, patent):
             allowed = []
 
         payload = {
@@ -106,8 +110,9 @@ class WorkflowHistoryView(generics.ListAPIView):
     def get_queryset(self):
         patent_id = self.kwargs['patent_id']
         patent = get_object_or_404(PatentApplication, patent_id=patent_id)
+        user = cast(AbstractBaseUser, self.request.user)
 
-        if not can_view_patent(self.request.user, patent):
+        if not can_view_patent(user, patent):
             return WorkflowEvent.objects.none()
 
         return WorkflowEvent.objects.filter(application=patent).select_related(
@@ -117,8 +122,9 @@ class WorkflowHistoryView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         patent_id = self.kwargs['patent_id']
         patent = get_object_or_404(PatentApplication, patent_id=patent_id)
+        user = cast(AbstractBaseUser, request.user)
 
-        if not can_view_patent(request.user, patent):
+        if not can_view_patent(user, patent):
             return Response(
                 {'detail': 'You do not have permission to view this patent application.'},
                 status=status.HTTP_403_FORBIDDEN,

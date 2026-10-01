@@ -1,3 +1,4 @@
+from typing import Any, cast
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -11,15 +12,35 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'usn_or_emp_id', 'email', 'mobile', 'role', 'department', 'department_detail', 'created_at']
+        fields = [
+            'id', 'name', 'usn_or_emp_id', 'email', 'mobile',
+            'role', 'department', 'department_detail',
+            'is_staff', 'is_superuser', 'created_at'
+        ]
+        read_only_fields = [
+            'id', 'role', 'email', 'usn_or_emp_id', 'department',
+            'is_staff', 'is_superuser', 'created_at'
+        ]
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    department_detail = DepartmentSerializer(source='department', read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'name', 'usn_or_emp_id', 'email', 'mobile',
+            'role', 'department', 'department_detail',
+            'is_active', 'is_staff', 'is_superuser', 'created_at'
+        ]
         read_only_fields = ['id', 'created_at']
 
 
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'email'
 
-    def validate(self, attrs):
-        data = super().validate(attrs)
+    def validate(self, attrs) -> dict[str, Any]:
+        data = cast(dict[str, Any], super().validate(attrs))
         data['user'] = UserSerializer(self.user).data
         return data
 

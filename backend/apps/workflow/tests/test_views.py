@@ -1,57 +1,84 @@
-import pytest
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient
+from rest_framework.test import APITestCase
+from django.contrib.auth import get_user_model
 
-from apps.patents.models import PatentApplicationStatus
+from apps.departments.models import Department
+from apps.patents.models import PatentApplication, PatentApplicationStatus
 from apps.workflow.models import WorkflowEvent
 
-
-@pytest.fixture
-def api_client():
-    return APIClient()
+User = get_user_model()
 
 
-@pytest.mark.django_db
-class TestWorkflowAPI:
-    def test_transition_submit_creates_event(self, api_client, draft_patent, applicant):
-        api_client.force_authenticate(user=applicant)
-        url = reverse('workflow-transition', kwargs={'patent_id': draft_patent.patent_id})
+class WorkflowAPITestCase(APITestCase):
+    def setUp(self):
+        self.department = Department.objects.create(name='Computer Science & Engineering', code='CSE')
+        self.applicant = User.objects.create_user(
+            email='applicant@test.edu',
+            password='pass1234',
+            name='Test Applicant',
+            usn_or_emp_id='USN9001',
+            mobile='9000000001',
+            role='applicant',
+            department=self.department,
+        )
+        self.other_applicant = User.objects.create_user(
+            email='other@test.edu',
+            password='pass1234',
+            name='Other Applicant',
+            usn_or_emp_id='USN9002',
+            mobile='9000000002',
+            role='applicant',
+            department=self.department,
+        )
+        self.draft_patent = PatentApplication.objects.create(
+            patent_id='PAT-2026-CSE-900',
+            applicant=self.applicant,
+            department=self.department,
+            title='Test Patent',
+            category='Software',
+            abstract='Abstract',
+            keywords='test',
+            problem_statement='Problem',
+            novelty_description='Novelty',
+            proposed_application='Application',
+            status=PatentApplicationStatus.DRAFT,
+        )
 
-        response = api_client.post(url, {'to_status': PatentApplicationStatus.SUBMITTED}, format='json')
+    def test_transition_submit_creates_event(self):
+        self.client.force_authenticate(user=self.applicant)
+        url = reverse('workflow-transition', kwargs={'patent_id': self.draft_patent.patent_id})
 
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['from_status'] == PatentApplicationStatus.DRAFT
-        assert response.data['to_status'] == PatentApplicationStatus.SUBMITTED
-        assert WorkflowEvent.objects.count() == 1
+        response = self.client.post(url, {'to_status': PatentApplicationStatus.SUBMITTED}, format='json')
 
-    def test_allowed_transitions_for_applicant(self, api_client, draft_patent, applicant):
-        api_client.force_authenticate(user=applicant)
-        url = reverse('workflow-allowed', kwargs={'patent_id': draft_patent.patent_id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['from_status'], PatentApplicationStatus.DRAFT)
+        self.assertEqual(response.data['to_status'], PatentApplicationStatus.SUBMITTED)
+        self.assertEqual(WorkflowEvent.objects.count(), 1)
 
-        response = api_client.get(url)
+    def test_allowed_transitions_for_applicant(self):
+        self.client.force_authenticate(user=self.applicant)
+        url = reverse('workflow-allowed', kwargs={'patent_id': self.draft_patent.patent_id})
 
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['allowed_transitions'] == [PatentApplicationStatus.SUBMITTED]
+        response = self.client.get(url)
 
-    def test_history_denied_for_other_applicant(
-        self, api_client, draft_patent, other_applicant
-    ):
-        api_client.force_authenticate(user=other_applicant)
-        url = reverse('workflow-history', kwargs={'patent_id': draft_patent.patent_id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['allowed_transitions'], [PatentApplicationStatus.SUBMITTED])
 
-        response = api_client.get(url)
+    def test_history_denied_for_other_applicant(self):
+        self.client.force_authenticate(user=self.other_applicant)
+        url = reverse('workflow-history', kwargs={'patent_id': self.draft_patent.patent_id})
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        response = self.client.get(url)
 
-    def test_patent_submit_endpoint_uses_workflow(
-        self, api_client, draft_patent, applicant
-    ):
-        api_client.force_authenticate(user=applicant)
-        url = reverse('patent-submit', kwargs={'pk': draft_patent.pk})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        response = api_client.post(url)
+    def test_patent_submit_endpoint_uses_workflow(self):
+        self.client.force_authenticate(user=self.applicant)
+        url = reverse('patent-submit', kwargs={'pk': self.draft_patent.pk})
 
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['status'] == PatentApplicationStatus.SUBMITTED
-        assert WorkflowEvent.objects.count() == 1
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], PatentApplicationStatus.SUBMITTED)
+        self.assertEqual(WorkflowEvent.objects.count(), 1)

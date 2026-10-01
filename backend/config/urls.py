@@ -6,6 +6,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     
+    # Health checks for container orchestration and uptime probes
+    path('healthz', include('apps.common.urls')),
+    path('api/health/', include('apps.common.urls')),
+
     # API endpoints v1
     path('api/v1/departments/', include('apps.departments.urls')),
     path('api/v1/auth/', include('apps.authentication.urls')),

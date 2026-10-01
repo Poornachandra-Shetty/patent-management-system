@@ -70,3 +70,16 @@ class PatentApplicationCreateSerializer(serializers.ModelSerializer):
             Inventor.objects.create(application=patent, **inv_data)
 
         return patent
+
+    def update(self, instance, validated_data):
+        inventors_data = validated_data.pop('inventors', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if inventors_data is not None:
+            instance.inventors.all().delete()
+            for inv_data in inventors_data:
+                Inventor.objects.create(application=instance, **inv_data)
+
+        return instance

@@ -1,6 +1,7 @@
 from typing import TypedDict
 
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth import get_user_model
 from apps.departments.models import Department
 from apps.patents.models import PatentApplication, PatentApplicationStatus, Inventor
@@ -22,6 +23,9 @@ class Command(BaseCommand):
     help = 'Seeds database with initial departments, demo users across roles, and sample patents'
 
     def handle(self, *args, **options):
+        if not settings.DEBUG:
+            raise CommandError('seed_data cannot be run when DEBUG is False.')
+
         self.stdout.write(self.style.SUCCESS('Seeding database with initial demo data...'))
 
         # 1. Create Departments
