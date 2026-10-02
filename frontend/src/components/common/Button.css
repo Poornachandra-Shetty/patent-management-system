@@ -44,12 +44,13 @@
   background: var(--color-secondary);
   color: white;
   border-color: var(--color-secondary);
-  box-shadow: 0 6px 14px rgba(46, 139, 87, 0.18);
+  box-shadow: 0 8px 18px rgba(45, 139, 104, 0.2);
 }
 
 .btn--primary:hover:not(:disabled) {
   background: var(--color-secondary-dark);
   border-color: var(--color-secondary-dark);
+  transform: translateY(-2px);
 }
 
 .btn--secondary {

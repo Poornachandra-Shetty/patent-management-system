@@ -1,7 +1,9 @@
 /* DocumentsPage Styles */
 
 .documents-page {
-  padding: var(--space-xl) 0;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 0 56px;
 }
 
 /* Breadcrumb */
@@ -9,7 +11,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--space-xl);
+  margin-bottom: 28px;
   font-size: var(--font-size-sm);
 }
 
@@ -36,7 +38,7 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-lg);
-  margin-bottom: var(--space-xl);
+  margin-bottom: 24px;
 }
 
 .documents-page__title {
@@ -56,7 +58,7 @@
 .documents-page__info {
   background-color: var(--color-warning-light);
   border: 1px solid var(--color-warning);
-  margin-bottom: var(--space-xl);
+  margin-bottom: 24px;
 }
 
 .documents-page__info p {
@@ -66,7 +68,7 @@
 
 /* Help Section */
 .documents-page__help {
-  margin-top: var(--space-xl);
+  margin-top: 28px;
   background-color: var(--color-bg-secondary);
 }
 

@@ -1,13 +1,18 @@
 /* PatentDetails Styles */
 
 .patent-details {
-  max-width: 900px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
 /* Header */
 .patent-details__header {
-  margin-bottom: var(--space-xl);
+  margin-bottom: 24px;
+  padding: 24px 28px;
+  border-top: 3px solid var(--color-secondary);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .patent-details__header-top {
@@ -48,12 +53,12 @@
 .patent-details__content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
-  margin-bottom: var(--space-xl);
+  gap: 14px;
+  margin-bottom: 32px;
 }
 
 .patent-details__section {
-  padding: var(--space-lg);
+  padding: 22px 28px;
 }
 
 /* Grid for basic info */

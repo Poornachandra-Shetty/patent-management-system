@@ -1,7 +1,9 @@
 /* PatentDetailsPage Styles */
 
 .patent-details-page {
-  padding: var(--space-xl) 0;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 0 56px;
 }
 
 /* Breadcrumb */
@@ -9,7 +11,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--space-xl);
+  margin-bottom: 28px;
   font-size: var(--font-size-sm);
 }
 

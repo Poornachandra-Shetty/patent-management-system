@@ -4,7 +4,7 @@
  * Based on UI reference: logo left, menu items right
  */
 
-import { ChevronDown, Search, UserCircle2 } from 'lucide-react'
+import { Search, UserCircle2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import './Navbar.css'
 
@@ -33,10 +33,13 @@ function Navbar({ isLoggedIn = false, userName = '', user, onLogout }) {
             className="navbar__brand-logo"
           />
           <div className="navbar__brand-copy">
-            <span className="navbar__brand-primary">SJEC</span>
-            <span className="navbar__brand-secondary">Patent Management System</span>
           </div>
         </Link>
+
+        <nav className="navbar__links" aria-label="Primary navigation">
+          <Link to="/about" className="navbar__nav-link">About</Link>
+          {isLoggedIn && <Link to="/dashboard" className="navbar__nav-link">Workspace</Link>}
+        </nav>
 
         <div className="navbar__actions">
           <label className="navbar__search" aria-label="Search patents">
@@ -54,7 +57,6 @@ function Navbar({ isLoggedIn = false, userName = '', user, onLogout }) {
                   <span className="navbar__user-name">{userName || 'User'}</span>
                   <span className="navbar__user-role">{getRoleLabel()}</span>
                 </div>
-                <ChevronDown size={16} />
               </div>
 
               <button className="navbar__logout-btn" type="button" onClick={onLogout}>

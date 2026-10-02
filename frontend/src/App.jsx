@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, NavLink } from 'react
 import { Bell, ChevronDown, FileText, LayoutGrid, Search, Settings, UserCircle2, Users } from 'lucide-react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { Navbar, ProtectedRoute } from './components/common'
-import { LoginPage, DashboardPage, NewPatentPage, PatentDetailsPage, DocumentsPage, AdminDashboard, AdminPatentDetail } from './pages'
+import { LoginPage, AboutPage, DashboardPage, NewPatentPage, PatentDetailsPage, DocumentsPage, AdminDashboard, AdminPatentDetail } from './pages'
 import { USER_ROLES } from './utils/constants'
 import './App.css'
 
@@ -78,8 +78,11 @@ function AppContent() {
                 <NavLink
                   key={label}
                   to={to}
+                  end={label === 'Dashboard'}
                   className={({ isActive }) =>
-                    ['sidebar__item', isActive ? 'sidebar__item--active' : ''].filter(Boolean).join(' ')
+                    ['sidebar__item', label === 'Dashboard' && isActive ? 'sidebar__item--active' : '']
+                      .filter(Boolean)
+                      .join(' ')
                   }
                 >
                   <span className="sidebar__icon"><Icon size={18} /></span>
@@ -89,9 +92,7 @@ function AppContent() {
 
               <NavLink
                 to="/dashboard"
-                className={({ isActive }) =>
-                  ['sidebar__item', isActive ? 'sidebar__item--active' : ''].filter(Boolean).join(' ')
-                }
+                className="sidebar__item"
               >
                 <span className="sidebar__icon"><Settings size={18} /></span>
                 <span>Settings</span>
@@ -102,8 +103,8 @@ function AppContent() {
 
         <main className={`app-shell__main ${isAuthenticated ? 'app-shell__main--with-sidebar' : ''}`}>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<PlaceholderPage title="About" />} />
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/team" element={<PlaceholderPage title="Team" />} />
             <Route path="/patents" element={<PlaceholderPage title="Patents" />} />
             <Route path="/login" element={<LoginPage />} />

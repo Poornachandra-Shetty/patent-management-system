@@ -3,6 +3,9 @@
 .login-form__card {
   max-width: 440px;
   margin: 0 auto;
+  width: 100%;
+  border: none;
+  box-shadow: 0 20px 50px rgba(20, 74, 55, 0.2);
 }
 
 .login-form__header {
@@ -11,14 +14,14 @@
 }
 
 .login-form__title {
-  font-size: var(--font-size-2xl);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-sm) 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 8px;
 }
 
 .login-form__subtitle {
-  font-size: var(--font-size-sm);
+  font-size: 0.82rem;
   color: var(--color-text-muted);
   margin: 0;
 }
@@ -26,7 +29,7 @@
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: 18px;
 }
 
 .login-form__error {
@@ -40,8 +43,8 @@
 }
 
 .login-form__footer {
-  margin-top: var(--space-lg);
-  padding-top: var(--space-lg);
+  margin-top: 22px;
+  padding-top: 18px;
   border-top: 1px solid var(--color-border);
   text-align: center;
 }

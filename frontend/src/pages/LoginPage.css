@@ -1,49 +1,86 @@
 /* LoginPage Styles */
 
 .login-page {
-  min-height: calc(100vh - 64px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-xl) 0;
+  min-height: calc(100vh - 76px);
+  display: grid;
+  place-items: center;
+  padding: 48px 20px;
+  background:
+    linear-gradient(110deg, rgba(45, 139, 104, 0.96), rgba(76, 200, 155, 0.88)),
+    url('/photos/About.png') center / cover;
 }
 
 .login-page__content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xl);
+  width: min(100%, 980px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(340px, 440px);
+  align-items: center;
+  gap: clamp(32px, 7vw, 90px);
 }
 
 .login-page__header {
-  text-align: center;
+  color: white;
 }
 
 .login-page__brand {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin: 0 0 var(--space-xs) 0;
-  letter-spacing: 0.05em;
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  line-height: 1.04;
+  font-weight: 800;
+  margin: 0 0 14px;
+  letter-spacing: -0.04em;
 }
 
 .login-page__tagline {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  max-width: 380px;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.7;
   margin: 0;
+}
+
+.login-page__header::after {
+  content: 'Securely submit, track, and protect the ideas shaping tomorrow.';
+  display: block;
+  max-width: 360px;
+  margin-top: 26px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.88rem;
+  line-height: 1.8;
 }
 
 .login-page__info {
+  grid-column: 2;
   text-align: center;
-  padding: var(--space-lg);
-  background-color: var(--color-primary-light);
-  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
 }
 
 .login-page__info p {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.82);
   margin: 0;
   line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .login-page__content {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .login-page__header {
+    text-align: center;
+  }
+
+  .login-page__tagline,
+  .login-page__header::after {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .login-page__info {
+    grid-column: auto;
+  }
 }
