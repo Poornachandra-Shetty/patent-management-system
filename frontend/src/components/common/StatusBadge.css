@@ -1,0 +1,26 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background-color: var(--badge-bg, rgba(107, 114, 128, 0.08));
+  color: var(--badge-color, #374151);
+}
+
+.status-badge--small {
+  padding: 4px 8px;
+  font-size: 0.72rem;
+}
+
+.status-badge--medium {
+  padding: 6px 10px;
+  font-size: 0.77rem;
+}
+
+.status-badge--large {
+  padding: 8px 12px;
+  font-size: 0.82rem;
+}

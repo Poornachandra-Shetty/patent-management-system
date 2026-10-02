@@ -1,18 +1,25 @@
-from rest_framework import generics, permissions, status
-from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import generics, permissions, viewsets
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 from apps.authentication.serializers import (
+    AdminUserSerializer,
+    EmailTokenObtainPairSerializer,
     RegisterSerializer,
     SJECTokenObtainPairSerializer,
     UserSerializer,
 )
+from apps.common.permissions import IsAdminRole
 
 User = get_user_model()
 
 
 class SJECTokenObtainPairView(TokenObtainPairView):
     serializer_class = SJECTokenObtainPairSerializer
+
+
+class EmailTokenObtainPairView(TokenObtainPairView):
+    serializer_class = EmailTokenObtainPairSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -27,3 +34,12 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    """
+    Admin-only viewset for full user management including role assignments.
+    """
+    queryset = User.objects.all().select_related('department').order_by('id')
+    serializer_class = AdminUserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminRole]

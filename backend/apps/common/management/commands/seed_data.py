@@ -1,9 +1,10 @@
 from typing import TypedDict
 
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth import get_user_model
 from apps.departments.models import Department
-from apps.patents.models import PatentApplication, PatentApplicationStatus, Inventor, PatentIDCounter
+from apps.patents.models import PatentApplication, PatentApplicationStatus, Inventor
 from apps.reviews.models import Remark, RemarkAction
 from apps.workflow.models import WorkflowEvent
 
@@ -22,6 +23,9 @@ class Command(BaseCommand):
     help = 'Seeds database with initial departments, demo users across roles, and sample patents'
 
     def handle(self, *args, **options):
+        if not settings.DEBUG:
+            raise CommandError('seed_data cannot be run when DEBUG is False.')
+
         self.stdout.write(self.style.SUCCESS('Seeding database with initial demo data...'))
 
         # 1. Create Departments
@@ -162,11 +166,6 @@ class Command(BaseCommand):
                     usn_or_emp_id=patent.applicant.usn_or_emp_id,
                     department=patent.department,
                     is_primary_inventor=True
-                )
-                PatentIDCounter.objects.update_or_create(
-                    department=patent.department,
-                    year=2026,
-                    defaults={'last_sequence': 1},
                 )
                 if patent.status == PatentApplicationStatus.SUBMITTED:
                     WorkflowEvent.objects.create(

@@ -1,0 +1,66 @@
+/* LoginForm Styles */
+
+.login-form__card {
+  max-width: 440px;
+  margin: 0 auto;
+  width: 100%;
+  border: none;
+  box-shadow: 0 20px 50px rgba(20, 74, 55, 0.2);
+}
+
+.login-form__header {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.login-form__title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 8px;
+}
+
+.login-form__subtitle {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-form__error {
+  padding: var(--space-md);
+  background-color: var(--color-error-light);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.login-form__footer {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.login-form__help-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.login-form__link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-form__link:hover {
+  text-decoration: underline;
+}
