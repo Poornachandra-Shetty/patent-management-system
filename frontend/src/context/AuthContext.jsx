@@ -49,6 +49,7 @@ export function AuthProvider({ children }) {
       })
 
       const tokenFromResponse = response.data.access || response.data.token
+      const refreshToken = response.data.refresh
       let userData = response.data.user
 
       if (!userData && tokenFromResponse) {
@@ -62,6 +63,9 @@ export function AuthProvider({ children }) {
 
       // Store in localStorage
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, tokenFromResponse)
+      if (refreshToken) {
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
+      }
       localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData || {}))
 
       // Update state
@@ -81,6 +85,7 @@ export function AuthProvider({ children }) {
   // Logout function
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
     localStorage.removeItem(STORAGE_KEYS.USER_DATA)
     setToken(null)
     setUser(null)

@@ -12,7 +12,7 @@ class EmailLoginTestCase(APITestCase):
         department = Department.objects.create(name='Computer Science & Engineering', code='CSE')
         user = User.objects.create_user(
             name='Admin User',
-            email='admin@college.edu',
+            email='admin@sjec.ac.in',
             usn_or_emp_id='EMP001',
             mobile='9876543210',
             role='admin',
@@ -22,7 +22,7 @@ class EmailLoginTestCase(APITestCase):
 
         response = self.client.post(
             reverse('token_obtain_pair'),
-            {'email': 'admin@college.edu', 'password': 'password123'},
+            {'email': 'admin@sjec.ac.in', 'password': 'password123'},
             format='json',
         )
 

@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { Button, Input, Card } from '../common'
 import './LoginForm.css'
@@ -150,9 +150,9 @@ function LoginForm() {
       <div className="login-form__footer">
         <p className="login-form__help-text">
           Don't have an account?{' '}
-          <a href="/signup" className="login-form__link">
-            Contact administrator
-          </a>
+          <Link to="/signup" className="login-form__link">
+            Create account
+          </Link>
         </p>
       </div>
     </Card>

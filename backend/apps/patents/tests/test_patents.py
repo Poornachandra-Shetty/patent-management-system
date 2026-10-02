@@ -144,7 +144,10 @@ class PatentIDGenerationTestCase(TransactionTestCase):
 
         def worker():
             connection.close()
-            return generate_patent_id(department)
+            try:
+                return generate_patent_id(department)
+            finally:
+                connection.close()
 
         num_threads = 10
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
