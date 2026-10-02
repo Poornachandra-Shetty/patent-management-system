@@ -3,6 +3,7 @@
 // API Endpoints
 export const API_ENDPOINTS = {
   LOGIN: '/auth/login/',
+  REGISTER: '/auth/register/',
   PATENTS: '/patents/',
   PATENT_DETAIL: (id) => `/patents/${id}/`,
   PATENT_SUBMIT: (id) => `/patents/${id}/submit/`,
@@ -108,5 +109,6 @@ export const REVIEW_VISIBILITY_LABELS = {
 // Local Storage Keys
 export const STORAGE_KEYS = {
   AUTH_TOKEN: 'patent_auth_token',
+  REFRESH_TOKEN: 'patent_refresh_token',
   USER_DATA: 'patent_user_data',
 }

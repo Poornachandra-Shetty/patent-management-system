@@ -30,6 +30,7 @@ api.interceptors.response.use(
     // Handle 401 Unauthorized - redirect to login
     if (error.response?.status === 401) {
       localStorage.removeItem('patent_auth_token')
+      localStorage.removeItem('patent_refresh_token')
       localStorage.removeItem('patent_user_data')
       window.location.href = '/login'
     }

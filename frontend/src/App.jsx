@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, NavLink } from 'react
 import { Bell, ChevronDown, FileText, LayoutGrid, Search, Settings, UserCircle2, Users } from 'lucide-react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { Navbar, ProtectedRoute } from './components/common'
-import { LoginPage, AboutPage, DashboardPage, NewPatentPage, PatentDetailsPage, DocumentsPage, AdminDashboard, AdminPatentDetail } from './pages'
+import { LoginPage, SignupPage, AboutPage, DashboardPage, NewPatentPage, PatentDetailsPage, DocumentsPage, AdminDashboard, AdminPatentDetail } from './pages'
 import { USER_ROLES } from './utils/constants'
 import './App.css'
 
@@ -108,7 +108,7 @@ function AppContent() {
             <Route path="/team" element={<PlaceholderPage title="Team" />} />
             <Route path="/patents" element={<PlaceholderPage title="Patents" />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<PlaceholderPage title="Sign Up" />} />
+            <Route path="/signup" element={<SignupPage />} />
 
             <Route
               path="/dashboard"

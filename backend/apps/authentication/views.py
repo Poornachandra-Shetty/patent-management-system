@@ -1,15 +1,21 @@
 from rest_framework import generics, permissions, viewsets
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.views import TokenObtainPairView
+
 from apps.authentication.serializers import (
-    UserSerializer,
     AdminUserSerializer,
-    RegisterSerializer,
     EmailTokenObtainPairSerializer,
+    RegisterSerializer,
+    SJECTokenObtainPairSerializer,
+    UserSerializer,
 )
 from apps.common.permissions import IsAdminRole
 
 User = get_user_model()
+
+
+class SJECTokenObtainPairView(TokenObtainPairView):
+    serializer_class = SJECTokenObtainPairSerializer
 
 
 class EmailTokenObtainPairView(TokenObtainPairView):

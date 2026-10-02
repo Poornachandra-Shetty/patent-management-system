@@ -69,7 +69,7 @@ def transition_patent(
         InvalidConsultantError: consultant_id is not an active consultant.
     """
     locked_patent = (
-        PatentApplication.objects.select_for_update().select_related('applicant', 'assigned_to').get(pk=patent.pk)
+        PatentApplication.objects.select_for_update(of=('self',)).select_related('applicant', 'assigned_to').get(pk=patent.pk)
     )
     role: str = performed_by.role  # type: ignore[union-attr]
 

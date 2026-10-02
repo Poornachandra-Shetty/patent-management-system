@@ -61,7 +61,7 @@ class ProfileAndRoleSecurityTestCase(APITestCase):
             reverse('auth_register'),
             {
                 'name': 'New Guy',
-                'email': 'newguy@college.edu',
+                'email': 'newguy@sjec.ac.in',
                 'usn_or_emp_id': 'USN002',
                 'mobile': '8888888888',
                 'department': self.dept1.id,
@@ -71,7 +71,7 @@ class ProfileAndRoleSecurityTestCase(APITestCase):
             format='json',
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        created_user = User.objects.get(email='newguy@college.edu')
+        created_user = User.objects.get(email='newguy@sjec.ac.in')
         self.assertEqual(created_user.role, 'applicant')
 
     def test_admin_can_update_user_role_via_admin_endpoint(self):
