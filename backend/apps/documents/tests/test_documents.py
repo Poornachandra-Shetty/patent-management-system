@@ -88,6 +88,43 @@ class DocumentSecurityTestCase(APITestCase):
         self.assertEqual(doc.mime_type, "application/pdf")
         self.assertGreater(doc.file_size, 0)
 
+    def test_applicant_can_filter_documents_by_application(self):
+        self.client.force_authenticate(user=self.applicant)
+        Document.objects.create(
+            application=self.patent,
+            uploaded_by=self.applicant,
+            doc_type=DocumentType.PATENT_FORM,
+            file=SimpleUploadedFile("first.pdf", b"%PDF-1.4 test", content_type="application/pdf"),
+            mime_type="application/pdf",
+        )
+
+        other_patent = PatentApplication.objects.create(
+            patent_id="PAT-2026-0002",
+            applicant=self.applicant,
+            department=self.dept,
+            title="Another Patent",
+            category="Solar Tech",
+            abstract="Another abstract",
+            keywords="solar",
+            problem_statement="Another problem",
+            novelty_description="Another novelty",
+            proposed_application="Another application",
+        )
+        Document.objects.create(
+            application=other_patent,
+            uploaded_by=self.applicant,
+            doc_type=DocumentType.PATENT_FORM,
+            file=SimpleUploadedFile("second.pdf", b"%PDF-1.4 test", content_type="application/pdf"),
+            mime_type="application/pdf",
+        )
+
+        response = self.client.get(reverse("document-list"), {"application": self.patent.id})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["application"], self.patent.id)
+
     def test_exe_file_upload_rejected(self):
         self.client.force_authenticate(user=self.applicant)
         exe_content = b"MZ\x90\x00\x03\x00\x00\x00\x04\x00\x00\x00\xff\xff\x00\x00This program cannot be run in DOS mode."

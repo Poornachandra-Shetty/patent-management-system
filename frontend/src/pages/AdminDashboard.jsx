@@ -94,10 +94,10 @@ function AdminDashboard() {
                         <span className="admin-dashboard__title-text">{patent.title}</span>
                       </td>
                       <td className="admin-dashboard__cell">
-                        {patent.applicant_name || patent.applicant?.name || '-'}
+                        {patent.applicant_detail?.name || patent.applicant_name || patent.applicant?.name || '-'}
                       </td>
                       <td className="admin-dashboard__cell">
-                        {patent.department_name || patent.department?.name || '-'}
+                        {patent.department_detail?.name || patent.department_name || patent.department?.name || '-'}
                       </td>
                       <td className="admin-dashboard__cell">
                         {formatDate(patent.submitted_date || patent.created_at)}

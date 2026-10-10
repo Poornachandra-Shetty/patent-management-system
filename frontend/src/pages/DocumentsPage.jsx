@@ -164,7 +164,7 @@ function DocumentsPage() {
             <li><strong>Patent Form:</strong> The completed patent application form</li>
             <li><strong>NDA:</strong> Signed Non-Disclosure Agreement</li>
           </ul>
-          <p>All documents must be in PDF, DOC, or DOCX format. Maximum file size: 10MB</p>
+          <p>All documents must be in PDF, DOCX, JPG/JPEG, or PNG format. Maximum file size: 10MB</p>
         </Card>
       </Container>
     </div>
