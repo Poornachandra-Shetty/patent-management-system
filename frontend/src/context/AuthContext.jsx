@@ -91,6 +91,29 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  // Update stored user data after a successful profile PATCH.
+  // Merges the returned fields into existing user state and persists to localStorage.
+  const updateUser = useCallback((updatedFields) => {
+    setUser((prev) => {
+      const merged = { ...prev, ...updatedFields }
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(merged))
+      return merged
+    })
+  }, [])
+
+  // Re-fetch the full user profile from /auth/me/ and sync state + localStorage.
+  const refreshUser = useCallback(async () => {
+    try {
+      const response = await api.get('/auth/me/')
+      const fresh = response.data
+      setUser(fresh)
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(fresh))
+      return { success: true, user: fresh }
+    } catch {
+      return { success: false }
+    }
+  }, [])
+
   // Clear error
   const clearError = useCallback(() => {
     setError(null)
@@ -108,6 +131,8 @@ export function AuthProvider({ children }) {
     isAuthenticated,
     login,
     logout,
+    updateUser,
+    refreshUser,
     clearError,
   }
 

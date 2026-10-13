@@ -1,0 +1,307 @@
+/* ============================================================
+   SecuritySection.css
+   All values use existing CSS variables from App.css (:root).
+   ============================================================ */
+
+/* ── Section header ──────────────────────────────────────────── */
+.security-section__header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.security-section__header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 4px;
+}
+
+.security-section__header p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── Cards ───────────────────────────────────────────────────── */
+.security-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.security-card:last-child {
+  margin-bottom: 0;
+}
+
+.security-card__heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.security-card__heading-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.security-card__heading-text h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 2px;
+}
+
+.security-card__heading-text p {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.security-card__body {
+  padding: 20px;
+}
+
+/* ── Password field row ──────────────────────────────────────── */
+.security-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.security-field:last-of-type {
+  margin-bottom: 0;
+}
+
+.security-field__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.security-field__input-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  overflow: hidden;
+}
+
+.security-field__input-row:focus-within {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.security-field__input-row--error {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+.security-field__input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  padding: 10px 14px;
+  min-width: 0;
+}
+
+.security-field__input:disabled {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.security-field__toggle {
+  padding: 0 12px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-base);
+  flex-shrink: 0;
+}
+
+.security-field__toggle:hover {
+  color: var(--color-primary);
+}
+
+.security-field__error {
+  font-size: 0.78rem;
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+.security-field__helper {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Password requirements list ──────────────────────────────── */
+.security-requirements {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.security-requirements li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  transition: color var(--transition-base);
+}
+
+.security-requirements li.req--met {
+  color: #059669;
+}
+
+.security-requirements li.req--unmet {
+  color: var(--color-text-muted);
+}
+
+.security-requirements__icon {
+  flex-shrink: 0;
+}
+
+/* ── Form footer ─────────────────────────────────────────────── */
+.security-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  flex-wrap: wrap;
+}
+
+/* ── Alert banners ───────────────────────────────────────────── */
+.security-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.security-alert--success {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #065f46;
+}
+
+.security-alert--error {
+  background: var(--color-error-light);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+}
+
+.security-alert__icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Session / Logout card ───────────────────────────────────── */
+.security-session-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  flex-wrap: wrap;
+}
+
+.security-session-info__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.security-session-info__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.security-session-info__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 2px;
+}
+
+.security-session-info__sub {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── JWT note ────────────────────────────────────────────────── */
+.security-jwt-note {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  padding: 10px 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 540px) {
+  .security-card__footer {
+    justify-content: stretch;
+  }
+
+  .security-card__footer .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .security-session-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
