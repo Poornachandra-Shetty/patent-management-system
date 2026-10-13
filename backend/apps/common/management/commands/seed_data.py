@@ -50,7 +50,7 @@ class Command(BaseCommand):
         # 2. Create Users
         users_data: list[UserSeedData] = [
             {
-                'email': 'admin@college.edu',
+                'email': 'admin@sjec.ac.in',
                 'name': 'Dr. Administrative Head',
                 'usn_or_emp_id': 'EMP001',
                 'mobile': '9876543210',
@@ -58,7 +58,7 @@ class Command(BaseCommand):
                 'department': departments['CSE'],
             },
             {
-                'email': 'scrutinizer@college.edu',
+                'email': 'scrutinizer@sjec.ac.in',
                 'name': 'Dr. Scrutinizer Specialist',
                 'usn_or_emp_id': 'EMP002',
                 'mobile': '9876543211',
@@ -66,7 +66,7 @@ class Command(BaseCommand):
                 'department': departments['CSE'],
             },
             {
-                'email': 'consultant@college.edu',
+                'email': 'consultant@sjec.ac.in',
                 'name': 'Advocate External Consultant',
                 'usn_or_emp_id': 'EMP003',
                 'mobile': '9876543212',
@@ -74,7 +74,7 @@ class Command(BaseCommand):
                 'department': departments['ECE'],
             },
             {
-                'email': 'student@college.edu',
+                'email': 'student@sjec.ac.in',
                 'name': 'Ananya Student',
                 'usn_or_emp_id': 'USN2026001',
                 'mobile': '9876543213',
@@ -82,7 +82,7 @@ class Command(BaseCommand):
                 'department': departments['CSE'],
             },
             {
-                'email': 'faculty@college.edu',
+                'email': 'faculty@sjec.ac.in',
                 'name': 'Prof. Mechanical Lead',
                 'usn_or_emp_id': 'EMP101',
                 'mobile': '9876543214',
@@ -93,16 +93,27 @@ class Command(BaseCommand):
 
         users = {}
         for u_info in users_data:
-            user, created = User.objects.get_or_create(
-                email=u_info['email'],
-                defaults={
-                    'name': u_info['name'],
-                    'usn_or_emp_id': u_info['usn_or_emp_id'],
-                    'mobile': u_info['mobile'],
-                    'role': u_info['role'],
-                    'department': u_info['department'],
-                }
-            )
+            legacy_email = u_info['email'].replace('@sjec.ac.in', '@college.edu')
+            user = User.objects.filter(email=u_info['email']).first()
+            if user is None:
+                user = User.objects.filter(email=legacy_email).first()
+                if user is not None:
+                    user.email = u_info['email']
+                    user.save(update_fields=['email'])
+                    created = False
+                else:
+                    user, created = User.objects.get_or_create(
+                        email=u_info['email'],
+                        defaults={
+                            'name': u_info['name'],
+                            'usn_or_emp_id': u_info['usn_or_emp_id'],
+                            'mobile': u_info['mobile'],
+                            'role': u_info['role'],
+                            'department': u_info['department'],
+                        }
+                    )
+            else:
+                created = False
             if created:
                 user.set_password('password123')
                 user.save()
