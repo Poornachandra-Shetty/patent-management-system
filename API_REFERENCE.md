@@ -7,15 +7,17 @@
 Authorization: Bearer <access_token>
 ```
 
-**Demo credentials (after running `python manage.py seed_data`):**
+Public endpoints do not need the authorization header: login, token refresh, registration, departments, and public documents.
+
+**Demo credentials (after running `python manage.py seed_data`):** These seeded accounts use the same `@sjec.ac.in` domain required by login.
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | admin@college.edu | password123 |
-| Scrutinizer | scrutinizer@college.edu | password123 |
-| Consultant | consultant@college.edu | password123 |
-| Applicant (Student) | student@college.edu | password123 |
-| Applicant (Faculty) | faculty@college.edu | password123 |
+| Admin | admin@sjec.ac.in | password123 |
+| Scrutinizer | scrutinizer@sjec.ac.in | password123 |
+| Consultant | consultant@sjec.ac.in | password123 |
+| Applicant (Student) | student@sjec.ac.in | password123 |
+| Applicant (Faculty) | faculty@sjec.ac.in | password123 |
 
 ---
 
@@ -29,7 +31,7 @@ Get a JWT access + refresh token pair.
 **Request body:**
 ```json
 {
-  "email": "student@college.edu",
+  "email": "student@sjec.ac.in",
   "password": "password123"
 }
 ```
@@ -38,7 +40,20 @@ Get a JWT access + refresh token pair.
 ```json
 {
   "access": "<jwt_access_token>",
-  "refresh": "<jwt_refresh_token>"
+  "refresh": "<jwt_refresh_token>",
+  "user": {
+    "id": 4,
+    "name": "Ananya Student",
+    "usn_or_emp_id": "USN2026001",
+    "email": "student@sjec.ac.in",
+    "mobile": "9876543213",
+    "role": "applicant",
+    "department": 1,
+    "department_detail": { "id": 1, "name": "Computer Science & Engineering", "code": "CSE" },
+    "is_staff": false,
+    "is_superuser": false,
+    "created_at": "2026-08-13T10:00:00Z"
+  }
 }
 ```
 
@@ -74,7 +89,7 @@ Register a new user account.
 ```json
 {
   "name": "John Doe",
-  "email": "john@college.edu",
+  "email": "john@sjec.ac.in",
   "password": "securepass123",
   "usn_or_emp_id": "USN2026099",
   "mobile": "9876543299",
@@ -83,14 +98,14 @@ Register a new user account.
 ```
 
 > Public registration always creates an **applicant** account. Staff roles (`scrutinizer`, `consultant`, `admin`) are assigned by administrators only.  
-> **`department`:** integer ID from `/departments/`
+> **`department`:** optional integer ID from `/departments/` (may be `null`).
 
 **Response `201 Created`:**
 ```json
 {
   "id": 6,
   "name": "John Doe",
-  "email": "john@college.edu",
+  "email": "john@sjec.ac.in",
   "usn_or_emp_id": "USN2026099",
   "mobile": "9876543299",
   "department": 1
@@ -111,7 +126,7 @@ Get the currently logged-in user's profile.
 {
   "id": 4,
   "name": "Ananya Student",
-  "email": "student@college.edu",
+  "email": "student@sjec.ac.in",
   "usn_or_emp_id": "USN2026001",
   "mobile": "9876543213",
   "role": "applicant",
@@ -147,20 +162,24 @@ Update the currently logged-in user's profile.
 ## 2. Departments
 
 ### GET `/departments/`
-List all departments. Public — no auth needed.
+List departments. Public — no auth needed. Responses use the standard paginated shape.
 
 **Auth required:** No
 
 **Response `200 OK`:**
 ```json
-[
-  { "id": 1, "name": "Computer Science & Engineering", "code": "CSE", "created_at": "..." },
-  { "id": 2, "name": "Electronics & Communication Engineering", "code": "ECE", "created_at": "..." },
-  { "id": 3, "name": "Mechanical Engineering", "code": "MECH", "created_at": "..." },
-  { "id": 4, "name": "Civil Engineering", "code": "CIVIL", "created_at": "..." },
-  { "id": 5, "name": "Biotechnology", "code": "BIOTECH", "created_at": "..." }
-]
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    { "id": 1, "name": "Computer Science & Engineering", "code": "CSE", "created_at": "..." },
+    { "id": 2, "name": "Electronics & Communication Engineering", "code": "ECE", "created_at": "..." }
+  ]
+}
 ```
+
+Use `results` to populate department selectors and submit the selected numeric `id` to foreign-key fields. Pagination accepts `?page=` and `?page_size=` (maximum page size 100).
 
 ---
 
@@ -196,22 +215,27 @@ List patent applications (role-scoped).
 | `department` | integer | Filter by department ID |
 | `category` | string | Filter by category |
 | `search` | string | Full-text search on `patent_id`, `title`, `keywords`, `abstract` |
-| `ordering` | string | Sort by `created_at`, `-created_at`, `updated_at`, `patent_id` |
+| `ordering` | string | Sort by `created_at`, `updated_at`, or `patent_id`; prefix with `-` for descending |
+| `page` | integer | Page number |
+| `page_size` | integer | Results per page (maximum 100) |
 
 **Patent status values:**
 `draft` | `submitted` | `under_scrutiny` | `forwarded_to_consultant` | `approved` | `rejected`
 
 **Response `200 OK`:**
 ```json
-[
-  {
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [{
     "id": 1,
     "patent_id": "PAT-2026-CSE-001",
     "applicant": 4,
     "applicant_detail": {
       "id": 4,
       "name": "Ananya Student",
-      "email": "student@college.edu",
+      "email": "student@sjec.ac.in",
       "role": "applicant"
     },
     "title": "AI-Driven Autonomous Crop Health Monitoring Drone System",
@@ -221,14 +245,14 @@ List patent applications (role-scoped).
     "status": "submitted",
     "created_at": "2026-08-13T10:00:00Z",
     "updated_at": "2026-08-13T10:00:00Z"
-  }
-]
+  }]
+}
 ```
 
 ---
 
 ### POST `/patents/`
-Create a new patent application. Status defaults to `draft`.
+Create a new patent application as a `draft`.
 
 **Auth required:** Yes
 
@@ -254,8 +278,11 @@ Create a new patent application. Status defaults to `draft`.
 }
 ```
 
-> `patent_id` is **auto-generated** — do NOT send it.  
-> `inventors` is optional.
+`title`, `department`, `category`, `abstract`, `keywords`, `problem_statement`, `novelty_description`, and `proposed_application` are required. `department` must be a department **ID**, not its display name. `inventors` is optional. Each inventor accepts `name`, `usn_or_emp_id`, and optional `department` (ID) and `is_primary_inventor`.
+
+> `patent_id`, `applicant`, and `status` are not client-settable on create; the backend generates/sets them. Do not send frontend-only fields such as `inventor_details`. Create the draft, then call `/patents/{id}/submit/` to submit it.
+
+The create request does not accept a `status` field. `POST /patents/` always creates a draft, including when the client sends an extra status value.
 
 **Response `201 Created`:**
 ```json
@@ -280,6 +307,8 @@ Create a new patent application. Status defaults to `draft`.
 Get full detail of a single patent application.
 
 **Auth required:** Yes
+
+`{id}` is the numeric database primary key returned in the response, not the human-readable `patent_id`.
 
 **Response `200 OK`:**
 ```json
@@ -318,10 +347,10 @@ Get full detail of a single patent application.
 ---
 
 ### PUT/PATCH `/patents/{id}/`
-Update a patent application.
+Update a patent application using any subset of the create fields.
 
 **Auth required:** Yes  
-**Request body:** Any subset of the POST fields.
+**Request body:** Any subset of the editable fields from `POST /patents/`. Only draft applications can be edited by non-admin users. Consultant assignment and status changes must use the workflow transition endpoint; `consultant` is not an accepted patent field.
 
 ---
 
@@ -369,25 +398,28 @@ This endpoint delegates to the workflow service and creates a `WorkflowEvent` au
 ## 4. Documents
 
 ### GET `/documents/`
-List all documents uploaded by the logged-in user.
+List documents visible to the authenticated user's role. The response is paginated. The endpoint does not currently support filtering by application; filter the `results` client-side if needed.
 
 **Auth required:** Yes
 
 **Response `200 OK`:**
 ```json
-[
-  {
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [{
     "id": 1,
     "application": 1,
     "uploaded_by": 4,
     "uploaded_by_name": "Ananya Student",
-    "doc_type": "form",
+    "doc_type": "patent_form",
     "file": "http://localhost:8000/media/documents/form.pdf",
     "file_size": 204800,
     "mime_type": "application/pdf",
     "uploaded_at": "2026-08-13T10:00:00Z"
-  }
-]
+  }]
+}
 ```
 
 ---
@@ -403,8 +435,10 @@ Upload a document. Use `multipart/form-data`.
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `application` | integer | Yes | Patent application ID |
-| `doc_type` | string | Yes | e.g. `form`, `report`, `drawing` |
+| `doc_type` | string | Yes | `supporting_documents`, `patent_form`, or `nda` |
 | `file` | file | Yes | The file to upload |
+
+Files must be at most 10 MB and have an allowed extension and matching MIME signature: PDF, DOCX, JPG/JPEG, or PNG.
 
 **Response `201 Created`:** Same shape as list item above.
 
@@ -414,6 +448,9 @@ Upload a document. Use `multipart/form-data`.
 Get a single document.
 
 **Auth required:** Yes
+
+### GET `/documents/{id}/download/`
+Stream a private document download. Requires authentication and permission to view the related patent.
 
 ---
 
@@ -431,17 +468,22 @@ List public documents (guidelines, templates). No auth needed.
 
 **Response `200 OK`:**
 ```json
-[
-  {
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [{
     "id": 1,
     "title": "Patent Filing Guidelines",
     "file": "http://localhost:8000/media/public/guidelines.pdf",
     "category": "guidelines",
     "uploaded_at": "...",
     "updated_at": "..."
-  }
-]
+  }]
+}
 ```
+
+`GET /documents/public/{id}/download/` streams a public document and does not require authentication.
 
 ---
 
@@ -449,17 +491,24 @@ List public documents (guidelines, templates). No auth needed.
 
 > **Visibility rules:**
 > - `applicant` → sees only remarks where `visible_to_applicant: true` on their own patents
-> - `scrutinizer` / `admin` / `consultant` → sees all remarks
+> - `admin` → sees all remarks
+> - `scrutinizer` → sees remarks for non-draft applications
+> - `consultant` → sees remarks for assigned applications and remarks they authored
 
 ### GET `/reviews/`
 List remarks (role-scoped).
 
 **Auth required:** Yes
 
-**Response `200 OK`:**
+**Query params:** `application` (numeric application ID), `action`, and `visible_to_applicant`.
+
+**Response `200 OK`:** Paginated (`count`, `next`, `previous`, `results`).
 ```json
-[
-  {
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [{
     "id": 1,
     "application": 1,
     "user": 2,
@@ -469,11 +518,11 @@ List remarks (role-scoped).
       "role": "scrutinizer"
     },
     "text": "Please clarify the novelty claim in section 3.",
-    "action": "clarification_requested",
+    "action": "comment",
     "visible_to_applicant": true,
     "created_at": "2026-08-13T10:00:00Z"
-  }
-]
+  }]
+}
 ```
 
 ---
@@ -488,13 +537,13 @@ Add a remark on a patent application.
 {
   "application": 1,
   "text": "The abstract needs to be more concise.",
-  "action": "clarification_requested",
+  "action": "comment",
   "visible_to_applicant": true
 }
 ```
 
-> **`action` choices:** `clarification_requested` | `approved` | `rejected` | `forwarded` | `noted`  
-> `visible_to_applicant` defaults to `false`.
+> **`action` choices:** `approved` | `rejected` | `forwarded` | `comment`.
+> `visible_to_applicant` defaults to `true`. Applicant-created remarks are always comments visible to the applicant. Consultants may create remarks only for patents assigned to them.
 
 **Response `201 Created`:** Same shape as list item above.
 
@@ -536,6 +585,8 @@ draft → submitted → under_scrutiny → forwarded_to_consultant → approved 
 | `scrutinizer` | `submitted` → `under_scrutiny` \| `rejected`; `under_scrutiny` → `forwarded_to_consultant` \| `rejected` |
 | `consultant` | `forwarded_to_consultant` → `approved` \| `rejected` (assigned patents only) |
 | `admin` | All of the above |
+
+`{patent_id}` in workflow URLs is the human-readable patent ID (for example `PAT-2026-CSE-001`), not the numeric database ID.
 
 ---
 
@@ -602,10 +653,13 @@ Full transition history for a patent, newest first. Access is scoped by role (ap
 
 **Auth required:** Yes
 
-**Response `200 OK`:**
+**Response `200 OK`:** Paginated (`count`, `next`, `previous`, `results`).
 ```json
-[
-  {
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [{
     "id": 2,
     "patent_id": "PAT-2026-CSE-001",
     "application": 1,
@@ -615,8 +669,7 @@ Full transition history for a patent, newest first. Access is scoped by role (ap
     "to_status": "under_scrutiny",
     "note": "",
     "created_at": "2026-08-14T10:00:00Z"
-  },
-  {
+  }, {
     "id": 1,
     "patent_id": "PAT-2026-CSE-001",
     "application": 1,
@@ -626,8 +679,8 @@ Full transition history for a patent, newest first. Access is scoped by role (ap
     "to_status": "submitted",
     "note": "Application submitted by applicant.",
     "created_at": "2026-08-14T09:00:00Z"
-  }
-]
+  }]
+}
 ```
 
 ---
@@ -651,11 +704,53 @@ Full transition history for a patent, newest first. Access is scoped by role (ap
 
 ---
 
-## Not Yet Implemented
+## 7. Audit
 
-These URL prefixes exist but return `404` — they'll be built in a future sprint:
+### GET `/audit/`
+List patents for which the authenticated user can view audit history. Accepts `?limit=` (default 50, maximum 200). Returns `{ "role": "...", "auditable_patents": [...], "total": 1 }`.
 
-| Prefix | Planned feature |
+### GET `/audit/patents/{patent_id}/`
+Get status changes and remarks visible to the authenticated user for the supplied human-readable patent ID. Optional `?limit=` and `?offset=`; the maximum limit is 500.
+
+Both audit endpoints require authentication. Applicants and consultants only see audit records for patents they can access; internal remarks are hidden from applicants.
+
+## 8. Notifications
+
+All notification endpoints require authentication and are scoped to the current user.
+
+| Method and path | Purpose |
 |---|---|
-| `/api/v1/audit/` | Full audit log of who did what |
-| `/api/v1/notifications/` | In-app notifications per user |
+| `GET /notifications/` | List notifications (paginated) |
+| `GET /notifications/{id}/` | Get one notification |
+| `GET /notifications/unread-count/` | Return `{ "unread_count": 3 }` |
+| `PATCH /notifications/{id}/mark-as-read/` | Mark one notification as read |
+| `PATCH /notifications/mark-all-as-read/` | Mark all unread notifications as read |
+
+## 9. Admin users
+
+`/auth/users/` is an admin-only user-management endpoint. `GET` lists users; standard viewset detail, create, update, and delete routes are also exposed. The current endpoint does not implement a `role` query filter.
+
+## Pagination and validation
+
+Paginated list endpoints return:
+
+```json
+{
+  "count": 0,
+  "next": null,
+  "previous": null,
+  "results": []
+}
+```
+
+Use `results` rather than treating the response as a bare array. The default page size is 10; `?page_size=` can request up to 100.
+
+DRF validation failures use HTTP `400` with field-specific messages, for example:
+
+```json
+{
+  "department": ["Incorrect type. Expected pk value, received str."]
+}
+```
+
+The frontend should display the response's `detail` string when present, or map field-name arrays to the corresponding form fields. A `401` means the request is missing a valid access token; send it as a Bearer token for protected endpoints.
