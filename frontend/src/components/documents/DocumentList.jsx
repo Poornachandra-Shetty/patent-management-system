@@ -76,7 +76,7 @@ function DocumentList({
         {documents.map((doc) => (
           <Card key={doc.id} className="document-item" padding="medium">
             <div className="document-item__icon">
-              {getFileIcon(doc.file_url)}
+              {getFileIcon(doc.file || doc.file_url)}
             </div>
             
             <div className="document-item__info">
@@ -90,7 +90,7 @@ function DocumentList({
             
             <div className="document-item__actions">
               <a
-                href={doc.file_url}
+                href={doc.file || doc.file_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="document-item__download"

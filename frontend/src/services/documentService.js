@@ -43,13 +43,13 @@ export async function uploadDocument(applicationId, docType, file, onProgress) {
 
   try {
     const formData = new FormData()
-    formData.append('application_id', applicationId)
+    formData.append('application', applicationId)
     formData.append('doc_type', docType)
     formData.append('file', file)
 
     const response = await api.post(API_ENDPOINTS.DOCUMENTS, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': undefined,
       },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
@@ -88,10 +88,12 @@ export async function getDocuments(applicationId) {
   }
 
   try {
-    const response = await api.get(`${API_ENDPOINTS.DOCUMENTS}?application_id=${applicationId}`)
+    const response = await api.get(API_ENDPOINTS.DOCUMENTS, {
+      params: { application: applicationId },
+    })
     return {
       success: true,
-      data: response.data,
+      data: response.data.results,
     }
   } catch (error) {
     return {
@@ -141,7 +143,7 @@ export async function deleteDocument(documentId) {
 export function validateFile(file, options = {}) {
   const {
     maxSize = 10 * 1024 * 1024, // 10MB default
-    allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'],
   } = options
 
   // Check file size
@@ -156,7 +158,7 @@ export function validateFile(file, options = {}) {
   if (!allowedTypes.includes(file.type)) {
     return {
       valid: false,
-      error: 'Invalid file type. Only PDF, DOC, and DOCX files are allowed',
+      error: 'Invalid file type. Only PDF, DOCX, JPG/JPEG, and PNG files are allowed',
     }
   }
 

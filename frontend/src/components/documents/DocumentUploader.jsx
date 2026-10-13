@@ -167,7 +167,7 @@ function DocumentUploader({
           ref={fileInputRef}
           type="file"
           className="document-uploader__input"
-          accept=".pdf,.doc,.docx"
+          accept=".pdf,.docx,.jpg,.jpeg,.png"
           onChange={handleFileSelect}
           disabled={disabled || uploading}
         />
@@ -194,7 +194,7 @@ function DocumentUploader({
             <div className="document-uploader__icon">📁</div>
             <p>Drag and drop a file here, or click to browse</p>
             <span className="document-uploader__hint">
-              Accepted formats: PDF, DOC, DOCX (max 10MB)
+              Accepted formats: PDF, DOCX, JPG/JPEG, PNG (max 10MB)
             </span>
           </div>
         )}
