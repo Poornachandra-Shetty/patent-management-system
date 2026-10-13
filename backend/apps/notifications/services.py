@@ -29,8 +29,9 @@ def create_status_change_notification(
     Create notifications for a patent status change.
 
     Notifies:
-    - The patent applicant (always)
-    - The assigned consultant (if one exists and transition is relevant)
+    - The patent applicant (always, unless they disabled status_change_in_app)
+    - The assigned consultant (if one exists and transition is relevant,
+      unless they disabled status_change_in_app)
     - Admins (via their inbox preference, optional)
 
     Args:
@@ -43,6 +44,8 @@ def create_status_change_notification(
     Returns:
         List of created Notification objects
     """
+    from apps.notifications.models import NotificationPreference
+
     notifications: list[Notification] = []
 
     # Build notification title and message
@@ -52,30 +55,34 @@ def create_status_change_notification(
     if note:
         message += f"\n\nNote: {note}"
 
-    # Notify the applicant (always)
+    # Notify the applicant (unless they opted out)
     if patent.applicant.is_active:
-        notification = Notification.objects.create(
-            recipient=patent.applicant,
-            title=title,
-            message=message,
-            event_type=NotificationEventType.STATUS_CHANGE,
-            related_application=patent,
-        )
-        notifications.append(notification)
+        pref = NotificationPreference.for_user(patent.applicant)
+        if pref.status_change_in_app:
+            notification = Notification.objects.create(
+                recipient=patent.applicant,
+                title=title,
+                message=message,
+                event_type=NotificationEventType.STATUS_CHANGE,
+                related_application=patent,
+            )
+            notifications.append(notification)
 
     # Notify the assigned consultant if status is UNDER_SCRUTINY or FORWARDED_TO_CONSULTANT
     if (patent.assigned_to and
         patent.assigned_to.is_active and
         patent.assigned_to != patent.applicant and
         to_status in [PatentApplicationStatus.FORWARDED_TO_CONSULTANT, PatentApplicationStatus.UNDER_SCRUTINY]):
-        notification = Notification.objects.create(
-            recipient=patent.assigned_to,
-            title=title,
-            message=f"Patent '{patent.title}' ({patent.patent_id}) requires your attention. Status: {to_status}",
-            event_type=NotificationEventType.STATUS_CHANGE,
-            related_application=patent,
-        )
-        notifications.append(notification)
+        pref = NotificationPreference.for_user(patent.assigned_to)
+        if pref.status_change_in_app:
+            notification = Notification.objects.create(
+                recipient=patent.assigned_to,
+                title=title,
+                message=f"Patent '{patent.title}' ({patent.patent_id}) requires your attention. Status: {to_status}",
+                event_type=NotificationEventType.STATUS_CHANGE,
+                related_application=patent,
+            )
+            notifications.append(notification)
 
     return notifications
 
@@ -89,8 +96,9 @@ def create_remark_notification(
     Create a notification for a new remark.
 
     Notifies:
-    - The patent applicant (if remark is visible_to_applicant)
-    - The assigned consultant/scrutinizer (if appropriate)
+    - The patent applicant (if remark is visible_to_applicant and they have
+      remark_added_in_app enabled)
+    - The assigned consultant/scrutinizer (if appropriate and preference enabled)
 
     Args:
         remark: Remark object that was created
@@ -98,19 +106,24 @@ def create_remark_notification(
     Returns:
         Created Notification object, or None if no notification was created
     """
+    from apps.notifications.models import NotificationPreference
+
     patent = remark.application
 
     # Determine recipient based on visibility and role
     recipient: Optional[User] = None
 
-    # If remark is visible to applicant, notify them
     if remark.visible_to_applicant and patent.applicant.is_active and patent.applicant != remark.user:
         recipient = patent.applicant
-    # If remark is internal (not visible to applicant), notify the consultant/scrutinizer
     elif not remark.visible_to_applicant and patent.assigned_to and patent.assigned_to.is_active:
         recipient = patent.assigned_to
 
     if not recipient:
+        return None
+
+    # Respect recipient's preference
+    pref = NotificationPreference.for_user(recipient)
+    if not pref.remark_added_in_app:
         return None
 
     # Build notification title and message

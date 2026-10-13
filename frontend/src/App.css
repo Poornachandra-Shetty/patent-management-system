@@ -351,3 +351,572 @@ img {
     font-size: 1.75rem;
   }
 }
+
+
+/* ============================================================
+   DARK MODE
+   Applied via  data-theme="dark"  on <html> by ThemeContext.
+   Overrides every CSS variable. Hard-coded colors in individual
+   component files are patched with targeted selectors below.
+   ============================================================ */
+
+[data-theme="dark"] {
+  /* ── Brand (keep green identity, slightly lighter for dark bg) */
+  --color-primary:        #3DA87D;
+  --color-primary-dark:   #2D8B68;
+  --color-primary-light:  rgba(76, 200, 155, 0.14);
+  --color-secondary:      #4CC89B;
+  --color-secondary-dark: #3DA87D;
+  --color-secondary-light:rgba(76, 200, 155, 0.14);
+
+  /* ── Backgrounds & surfaces */
+  --color-bg:             #0F1117;
+  --color-surface:        #1A1D27;
+  --color-bg-secondary:   #1E2130;
+  --color-bg-tertiary:    #252838;
+
+  /* ── Borders */
+  --color-border:         #2E3347;
+
+  /* ── Text */
+  --color-text:           #E8EAF0;
+  --color-text-muted:     #8892A4;
+  --color-text-primary:   #E8EAF0;
+  --color-text-secondary: #8892A4;
+
+  /* ── Semantic */
+  --color-danger:         #F87171;
+  --color-warning:        #FBBF24;
+  --color-purple:         #A78BFA;
+  --color-blue-soft:      #1E2D47;
+  --color-warning-light:  #292010;
+  --color-error:          #F87171;
+  --color-error-light:    #2D1515;
+
+  /* ── Shadows (darker, more diffuse) */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Body / page backgrounds ──────────────────────────────── */
+[data-theme="dark"] body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .app {
+  background:
+    radial-gradient(circle at 92% 4%, rgba(76, 200, 155, 0.06), transparent 24rem),
+    var(--color-bg);
+}
+
+/* ── Navbar ───────────────────────────────────────────────── */
+[data-theme="dark"] .navbar {
+  background: rgba(26, 29, 39, 0.96);
+  border-bottom-color: var(--color-border);
+}
+
+[data-theme="dark"] .navbar__search {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .navbar__search input {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .navbar__user-menu {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .navbar__logout-btn {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.25);
+  color: var(--color-danger);
+}
+
+[data-theme="dark"] .navbar__logout-btn:hover {
+  background: rgba(248, 113, 113, 0.14);
+}
+
+[data-theme="dark"] .navbar__login-link {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+[data-theme="dark"] .app-shell__sidebar {
+  background: var(--color-surface);
+  border-right-color: var(--color-border);
+}
+
+[data-theme="dark"] .sidebar__header {
+  border-bottom-color: var(--color-border);
+}
+
+[data-theme="dark"] .sidebar__header h2 {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .sidebar__item {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .sidebar__item--active {
+  background: var(--color-bg-secondary);
+  color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px rgba(76, 200, 155, 0.18);
+}
+
+/* ── Inputs ───────────────────────────────────────────────── */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+/* ── Input component ──────────────────────────────────────── */
+[data-theme="dark"] .input-group__wrapper {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .input-group__input {
+  background: transparent;
+  color: var(--color-text);
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+[data-theme="dark"] .btn--secondary {
+  background: var(--color-bg-secondary);
+  color: var(--color-primary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .btn--secondary:hover:not(:disabled) {
+  background: var(--color-bg-tertiary);
+}
+
+[data-theme="dark"] .btn--ghost {
+  color: var(--color-primary);
+}
+
+[data-theme="dark"] .btn--ghost:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+[data-theme="dark"] .card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .card--hoverable:hover {
+  border-color: rgba(76, 200, 155, 0.25);
+}
+
+/* ── Modal ────────────────────────────────────────────────── */
+[data-theme="dark"] .modal__overlay {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+[data-theme="dark"] .modal__container {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] .modal__title {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .modal__body {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .modal__btn-cancel {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .modal__btn-cancel:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+/* ── FilterPanel ──────────────────────────────────────────── */
+[data-theme="dark"] .filter-panel,
+[data-theme="dark"] .filter-panel__dropdown {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .filter-panel__input,
+[data-theme="dark"] .filter-panel__select {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .filter-panel__button--secondary {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+/* ── Pagination ───────────────────────────────────────────── */
+[data-theme="dark"] .pagination__btn {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .pagination__btn:disabled {
+  background-color: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .pagination__btn--active {
+  background-color: var(--color-secondary);
+  color: #fff;
+  border-color: var(--color-secondary);
+}
+
+/* ── RemarkCard ───────────────────────────────────────────── */
+[data-theme="dark"] .remark-card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .remark-card__text {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .remark-card__meta {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .remark-card__badge--approved {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+}
+
+[data-theme="dark"] .remark-card__badge--rejected {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: #fca5a5;
+}
+
+/* ── Toast ────────────────────────────────────────────────── */
+[data-theme="dark"] .toast--success {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+[data-theme="dark"] .toast--error {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+[data-theme="dark"] .toast--warning {
+  background-color: rgba(251, 191, 36, 0.12);
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+[data-theme="dark"] .toast--info {
+  background-color: rgba(99, 179, 237, 0.12);
+  color: #93c5fd;
+  border-color: rgba(99, 179, 237, 0.3);
+}
+
+/* ── StatusBadge ──────────────────────────────────────────── */
+[data-theme="dark"] .status-badge {
+  filter: brightness(0.85) saturate(1.2);
+}
+
+/* ── PatentCard / PatentList ──────────────────────────────── */
+[data-theme="dark"] .patent-card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .patent-list__empty {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+/* ── DocumentUploader / DocumentList ─────────────────────── */
+[data-theme="dark"] .document-uploader__dropzone {
+  background-color: var(--color-bg-secondary);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .document-item {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* ── LoginForm / RegisterForm ─────────────────────────────── */
+[data-theme="dark"] .login-form,
+[data-theme="dark"] .register-form {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .register-form__title,
+[data-theme="dark"] .register-form__label {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .register-form__subtitle,
+[data-theme="dark"] .register-form__helper {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .register-form__input {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .register-form__input:focus {
+  border-color: var(--color-secondary);
+}
+
+[data-theme="dark"] .register-form__error-text {
+  color: var(--color-danger);
+}
+
+/* ── LoginPage gradient — keep branded, just darken ──────── */
+[data-theme="dark"] .login-page__left {
+  background: linear-gradient(145deg, #0e2a1e 0%, #163d2b 100%);
+}
+
+/* ── Dashboard / Admin pages ──────────────────────────────── */
+[data-theme="dark"] .dashboard-page,
+[data-theme="dark"] .admin-dashboard {
+  background: var(--color-bg);
+}
+
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .admin-stat-card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .quick-link {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .quick-link:hover {
+  background: var(--color-bg-secondary);
+  border-color: rgba(76, 200, 155, 0.25);
+}
+
+/* ── AdminPatentDetail ────────────────────────────────────── */
+[data-theme="dark"] .admin-patent-detail {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .admin-patent-detail__card {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .admin-patent-detail__section-title {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .admin-patent-detail__label {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .admin-patent-detail__value {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .admin-patent-detail__header {
+  background-color: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .workflow-action-btn {
+  background-color: #1e3a6e;
+  color: #93c5fd;
+  border-color: #1e3a6e;
+}
+
+[data-theme="dark"] .workflow-action-btn:hover {
+  background-color: #1e4080;
+}
+
+/* ── PatentForm / PatentDetails ───────────────────────────── */
+[data-theme="dark"] .patent-form,
+[data-theme="dark"] .patent-form__section {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .patent-form__label {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .patent-form__input,
+[data-theme="dark"] .patent-form__select,
+[data-theme="dark"] .patent-form__textarea {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .patent-details__section {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* PatentDetailsPage overlay */
+[data-theme="dark"] .patent-details-page__overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .patent-details-page__modal {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* ── Settings pages (already use vars — extra safety) ─────── */
+[data-theme="dark"] .settings-content,
+[data-theme="dark"] .settings-nav {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .settings-nav__item {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .settings-nav__item:hover {
+  background: var(--color-bg-secondary);
+}
+
+[data-theme="dark"] .settings-nav__item--active {
+  background: var(--color-bg-secondary);
+  color: var(--color-primary);
+}
+
+[data-theme="dark"] .security-card,
+[data-theme="dark"] .notif-card,
+[data-theme="dark"] .profile-section__avatar-row {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .security-card__heading,
+[data-theme="dark"] .security-card__footer,
+[data-theme="dark"] .notif-card__heading,
+[data-theme="dark"] .notif-card__footer,
+[data-theme="dark"] .profile-field__value {
+  background: var(--color-bg-secondary);
+}
+
+[data-theme="dark"] .security-field__input-row {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .security-field__input {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .security-requirements,
+[data-theme="dark"] .security-jwt-note,
+[data-theme="dark"] .profile-field__value,
+[data-theme="dark"] .profile-field__input,
+[data-theme="dark"] .notif-unavailable-row,
+[data-theme="dark"] .notif-toggle-row:hover {
+  background: var(--color-bg-secondary);
+}
+
+[data-theme="dark"] .profile-field__input {
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .profile-field__input--readonly {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .notif-list__item--unread {
+  background: rgba(76, 200, 155, 0.07);
+}
+
+[data-theme="dark"] .notif-list__item--unread:hover {
+  background: var(--color-primary-light);
+}
+
+/* ── About page ───────────────────────────────────────────── */
+[data-theme="dark"] .about-page__hero {
+  background: linear-gradient(115deg, #0e2a1e 0%, #163d2b 100%);
+}
+
+[data-theme="dark"] .about-page__feature-card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .about-page__step {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* ── Loader ───────────────────────────────────────────────── */
+[data-theme="dark"] .loader__overlay {
+  background-color: rgba(15, 17, 23, 0.88);
+}
+
+/* ── Scrollbars (Webkit) ──────────────────────────────────── */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ── Prevent FOUC: set initial theme before React mounts ──── */
+/* This script-free approach uses CSS — ThemeContext sets the
+   attribute synchronously in its useState initialiser, so by
+   the time the first paint occurs data-theme is already set.  */

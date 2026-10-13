@@ -1,8 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, NavLink } from 'react-router-dom'
 import { Bell, ChevronDown, FileText, LayoutGrid, Search, Settings, UserCircle2, Users } from 'lucide-react'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { Navbar, ProtectedRoute } from './components/common'
-import { LoginPage, SignupPage, AboutPage, DashboardPage, NewPatentPage, PatentDetailsPage, DocumentsPage, AdminDashboard, AdminPatentDetail } from './pages'
+import { LoginPage, SignupPage, AboutPage, DashboardPage, NewPatentPage, PatentDetailsPage, DocumentsPage, AdminDashboard, AdminPatentDetail, SettingsPage } from './pages'
 import { USER_ROLES } from './utils/constants'
 import './App.css'
 
@@ -16,11 +17,13 @@ const sidebarItems = [
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 
@@ -91,8 +94,12 @@ function AppContent() {
               ))}
 
               <NavLink
-                to="/dashboard"
-                className="sidebar__item"
+                to="/settings"
+                className={({ isActive }) =>
+                  ['sidebar__item', isActive ? 'sidebar__item--active' : '']
+                    .filter(Boolean)
+                    .join(' ')
+                }
               >
                 <span className="sidebar__icon"><Settings size={18} /></span>
                 <span>Settings</span>
@@ -132,6 +139,15 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <AdminPatentDetail />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />
