@@ -5,10 +5,15 @@ from apps.departments.models import Department
 class PatentApplicationStatus(models.TextChoices):
     DRAFT = 'draft', 'Draft'
     SUBMITTED = 'submitted', 'Submitted'
-    UNDER_SCRUTINY = 'under_scrutiny', 'Under Scrutiny'
-    FORWARDED_TO_CONSULTANT = 'forwarded_to_consultant', 'Forwarded to Consultant'
+    UNDER_CONSULTANT_REVIEW = 'under_consultant_review', 'Under Consultant Review'
+    UNDER_REVIEW_TEAM = 'under_review_team', 'Under Review Team'
+    PENDING_FINAL_APPROVAL = 'pending_final_approval', 'Pending Final Approval'
     APPROVED = 'approved', 'Approved'
     REJECTED = 'rejected', 'Rejected'
+    # Legacy aliases preserved for backwards compatibility
+    UNDER_SCRUTINY = 'under_scrutiny', 'Under Scrutiny (Legacy)'
+    FORWARDED_TO_CONSULTANT = 'forwarded_to_consultant', 'Forwarded to Consultant (Legacy)'
+
 
 class PatentApplication(models.Model):
     patent_id = models.CharField(max_length=50, unique=True, db_index=True)
@@ -38,7 +43,7 @@ class PatentApplication(models.Model):
     novelty_description = models.TextField()
     proposed_application = models.TextField()
     status = models.CharField(
-        max_length=30,
+        max_length=40,
         choices=PatentApplicationStatus.choices,
         default=PatentApplicationStatus.DRAFT,
         db_index=True

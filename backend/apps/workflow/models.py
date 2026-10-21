@@ -25,11 +25,11 @@ class WorkflowEvent(models.Model):
         related_name='workflow_actions',
     )
     from_status = models.CharField(
-        max_length=30,
+        max_length=40,
         choices=PatentApplicationStatus.choices,
     )
     to_status = models.CharField(
-        max_length=30,
+        max_length=40,
         choices=PatentApplicationStatus.choices,
     )
     note = models.TextField(
