@@ -25,11 +25,19 @@ class CanAccessDocument(permissions.BasePermission):
             # Applicant owns the patent
             if patent.applicant_id == user.pk:
                 return True
-            # Assigned consultant
-            if patent.assigned_to_id == user.pk:
-                return True
-            # Scrutinizers can view submitted/active applications
-            if role == 'scrutinizer' and patent.status != PatentApplicationStatus.DRAFT:
+            # Consultant (assigned or evaluating unassigned submission)
+            if role == 'consultant':
+                if patent.assigned_to_id == user.pk:
+                    return True
+                if patent.assigned_to_id is None and patent.status in (
+                    PatentApplicationStatus.SUBMITTED,
+                    PatentApplicationStatus.UNDER_CONSULTANT_REVIEW,
+                    PatentApplicationStatus.PENDING_FINAL_APPROVAL,
+                    PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
+                ):
+                    return True
+            # Scrutinizers / Review Team can view submitted/active applications
+            if role in ('scrutinizer', 'review_team') and patent.status != PatentApplicationStatus.DRAFT:
                 return True
             return False
 
