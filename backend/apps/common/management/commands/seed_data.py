@@ -66,6 +66,14 @@ class Command(BaseCommand):
                 'department': departments['CSE'],
             },
             {
+                'email': 'reviewteam@sjec.ac.in',
+                'name': 'Prof. Review Committee Chair',
+                'usn_or_emp_id': 'EMP005',
+                'mobile': '9876543215',
+                'role': 'review_team',
+                'department': departments['CSE'],
+            },
+            {
                 'email': 'consultant@sjec.ac.in',
                 'name': 'Advocate External Consultant',
                 'usn_or_emp_id': 'EMP003',

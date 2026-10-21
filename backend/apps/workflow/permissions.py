@@ -12,29 +12,35 @@ from apps.patents.models import PatentApplication, PatentApplicationStatus as S
 
 def can_view_patent(user: AbstractBaseUser, patent: PatentApplication) -> bool:
     """Return True if the user may view this patent's workflow history."""
-    role: str = user.role  # type: ignore[union-attr]
+    role: str = getattr(user, 'role', '')
 
-    if role == 'admin':
+    if role == 'admin' or getattr(user, 'is_staff', False):
         return True
     if role == 'applicant':
         return patent.applicant_id == user.pk
     if role == 'consultant':
-        return patent.assigned_to_id == user.pk
-    if role == 'scrutinizer':
+        return patent.status != S.DRAFT or patent.assigned_to_id == user.pk
+    if role in ('scrutinizer', 'review_team'):
         return patent.status != S.DRAFT
     return False
 
 
 def can_act_on_patent(user: AbstractBaseUser, patent: PatentApplication) -> bool:
     """Return True if the user may perform a workflow transition on this patent."""
-    role: str = user.role  # type: ignore[union-attr]
+    role: str = getattr(user, 'role', '')
 
-    if role == 'admin':
+    if role == 'admin' or getattr(user, 'is_staff', False):
         return True
     if role == 'applicant':
         return patent.applicant_id == user.pk
-    if role == 'scrutinizer':
-        return patent.status in (S.SUBMITTED, S.UNDER_SCRUTINY)
+    if role in ('scrutinizer', 'review_team'):
+        return patent.status in (S.SUBMITTED, S.UNDER_REVIEW_TEAM, S.UNDER_SCRUTINY)
     if role == 'consultant':
-        return patent.assigned_to_id == user.pk
+        # Any active consultant can pick up unassigned submissions for evaluation
+        if patent.status in (S.SUBMITTED, S.UNDER_CONSULTANT_REVIEW):
+            return patent.assigned_to_id is None or patent.assigned_to_id == user.pk
+        # Final approval and forwarded evaluations require being the assigned consultant
+        if patent.status in (S.PENDING_FINAL_APPROVAL, S.FORWARDED_TO_CONSULTANT):
+            return patent.assigned_to_id == user.pk
+        return False
     return False

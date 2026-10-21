@@ -63,15 +63,20 @@ def create_status_change_notification(
         )
         notifications.append(notification)
 
-    # Notify the assigned consultant if status is UNDER_SCRUTINY or FORWARDED_TO_CONSULTANT
+    # Notify the assigned consultant if status is relevant to consultant review
     if (patent.assigned_to and
         patent.assigned_to.is_active and
         patent.assigned_to != patent.applicant and
-        to_status in [PatentApplicationStatus.FORWARDED_TO_CONSULTANT, PatentApplicationStatus.UNDER_SCRUTINY]):
+        to_status in [
+            PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
+            PatentApplicationStatus.UNDER_SCRUTINY,
+            PatentApplicationStatus.UNDER_CONSULTANT_REVIEW,
+            PatentApplicationStatus.PENDING_FINAL_APPROVAL,
+        ]):
         notification = Notification.objects.create(
             recipient=patent.assigned_to,
             title=title,
-            message=f"Patent '{patent.title}' ({patent.patent_id}) requires your attention. Status: {to_status}",
+            message=f"Patent '{patent.title}' ({patent.patent_id}) requires your attention. Status: {status_display}",
             event_type=NotificationEventType.STATUS_CHANGE,
             related_application=patent,
         )
