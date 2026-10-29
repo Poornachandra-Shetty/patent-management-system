@@ -17,6 +17,7 @@ from apps.patents.models import PatentApplication, PatentApplicationStatus
 class DocumentViewSet(viewsets.ModelViewSet):
     serializer_class = DocumentSerializer
     permission_classes = [permissions.IsAuthenticated, CanAccessDocument]
+    filterset_fields = ['application']
 
     def get_queryset(self):
         user = self.request.user

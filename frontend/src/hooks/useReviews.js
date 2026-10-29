@@ -25,8 +25,8 @@ export function useReviews(patentId) {
 
       if (response.success) {
         // Sort reviews by date
-        const sortedReviews = Array.isArray(response.data.results)
-          ? response.data.results.sort((a, b) => {
+        const sortedReviews = Array.isArray(response.data)
+          ? response.data.sort((a, b) => {
               return new Date(a.created_at) - new Date(b.created_at)
             })
           : []
@@ -49,8 +49,9 @@ export function useReviews(patentId) {
 
     try {
       const response = await adminService.createReview({
-        patent: patentId,
-        ...reviewData,
+        application: patentId,
+        text: reviewData.remark,
+        visible_to_applicant: reviewData.visibility === 'applicant',
       })
 
       if (response.success) {

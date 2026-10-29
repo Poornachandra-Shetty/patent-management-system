@@ -45,7 +45,7 @@ function AdminPatentDetail() {
   useEffect(() => {
     loadPatentDetail()
     loadConsultants()
-  }, [id])
+  }, [id, user?.role])
 
   useEffect(() => {
     if (id) {
@@ -74,6 +74,8 @@ function AdminPatentDetail() {
   }
 
   const loadConsultants = async () => {
+    if (user?.role !== USER_ROLES.ADMIN) return
+
     const response = await adminService.getUsersByRole('consultant')
 
     if (response.success) {
@@ -121,12 +123,13 @@ function AdminPatentDetail() {
     setAssigningConsultant(true)
 
     try {
-      const response = await adminService.updatePatent(id, {
-        consultant: selectedConsultant,
+      const response = await adminService.transitionPatent(patent.patent_id, {
+        to_status: 'forwarded_to_consultant',
+        consultant_id: Number(selectedConsultant),
       })
 
       if (response.success) {
-        setPatent(response.data)
+        await loadPatentDetail()
         setShowAssignModal(false)
         setSelectedConsultant('')
         showToast('Consultant assigned successfully', 'success')
@@ -146,7 +149,7 @@ function AdminPatentDetail() {
     setToastType(type)
   }
 
-  const canAssignConsultant = user?.role === USER_ROLES.ADMIN || user?.role === USER_ROLES.SCRUTINIZER
+  const canAssignConsultant = user?.role === USER_ROLES.ADMIN
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -217,14 +220,14 @@ function AdminPatentDetail() {
             <div className="patent-detail__info-item">
               <label className="patent-detail__label">Applicant Name</label>
               <p className="patent-detail__value">
-                {patent.applicant_name || patent.applicant?.name || '-'}
+                {patent.applicant_detail?.name || patent.applicant_name || patent.applicant?.name || '-'}
               </p>
             </div>
 
             <div className="patent-detail__info-item">
               <label className="patent-detail__label">Department</label>
               <p className="patent-detail__value">
-                {patent.department_name || patent.department?.name || '-'}
+                {patent.department_detail?.name || patent.department_name || patent.department?.name || '-'}
               </p>
             </div>
 
@@ -288,11 +291,11 @@ function AdminPatentDetail() {
               className="patent-detail__action-btn"
               onClick={() => setShowAssignModal(true)}
             >
-              {patent.consultant ? 'Change Consultant' : 'Assign Consultant'}
+              {patent.assigned_to ? 'Change Consultant' : 'Assign Consultant'}
             </button>
-            {patent.consultant && (
+            {patent.assigned_to && (
               <p className="patent-detail__consultant-info">
-                Current Consultant: {patent.consultant_name || patent.consultant.name || `ID: ${patent.consultant}`}
+                Current Consultant: {patent.assigned_to_detail?.name || `ID: ${patent.assigned_to}`}
               </p>
             )}
           </section>

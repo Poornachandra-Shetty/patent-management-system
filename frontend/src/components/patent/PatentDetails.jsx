@@ -16,7 +16,9 @@ function PatentDetails({ patent, onEdit, onSubmit, onUploadDocuments }) {
     patent_id,
     title,
     inventor_details,
+    inventors,
     department,
+    department_detail,
     category,
     abstract,
     keywords,
@@ -71,7 +73,7 @@ function PatentDetails({ patent, onEdit, onSubmit, onUploadDocuments }) {
           <div className="patent-details__grid">
             <div className="patent-details__field">
               <label>Department</label>
-              <p>{department || 'Not specified'}</p>
+              <p>{department_detail?.name || department?.name || department || 'Not specified'}</p>
             </div>
             <div className="patent-details__field">
               <label>Category</label>
@@ -86,7 +88,17 @@ function PatentDetails({ patent, onEdit, onSubmit, onUploadDocuments }) {
 
         {/* Inventor Details */}
         <Card title="Inventor Details" className="patent-details__section">
-          <p className="patent-details__text">{inventor_details || 'Not provided'}</p>
+          {inventors?.length ? (
+            <div className="patent-details__text">
+              {inventors.map((inventor) => (
+                <p key={inventor.id || inventor.usn_or_emp_id}>
+                  {inventor.name} - {inventor.usn_or_emp_id}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p className="patent-details__text">{inventor_details || 'Not provided'}</p>
+          )}
         </Card>
 
         {/* Abstract */}

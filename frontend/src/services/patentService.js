@@ -87,6 +87,7 @@ export async function createPatent(patentData) {
       id: MOCK_PATENTS.length + 1,
       patent_id: `PAT-2026-NEW-${String(MOCK_PATENTS.length + 1).padStart(3, '0')}`,
       ...patentData,
+      status: 'draft',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
