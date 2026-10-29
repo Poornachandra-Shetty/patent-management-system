@@ -1,16 +1,21 @@
 """
 Notification Views
 ==================
-REST API views for user notifications.
+REST API views for user notifications and notification preferences.
 """
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
 
-from apps.notifications.models import Notification
-from apps.notifications.serializers import NotificationSerializer, NotificationDetailSerializer
+from apps.notifications.models import Notification, NotificationPreference
+from apps.notifications.serializers import (
+    NotificationSerializer,
+    NotificationDetailSerializer,
+    NotificationPreferenceSerializer,
+)
 
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -91,3 +96,34 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({
             'unread_count': count
         }, status=status.HTTP_200_OK)
+
+
+class NotificationPreferenceView(APIView):
+    """
+    GET  /api/v1/notifications/preferences/
+        Returns the authenticated user's notification preferences.
+        Row is created with defaults on first access (get_or_create).
+
+    PATCH /api/v1/notifications/preferences/
+        Update one or more in-app preference toggles.
+        Email fields are read-only (email not yet implemented).
+
+    Permission: IsAuthenticated
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _get_or_create_pref(self, user):
+        return NotificationPreference.for_user(user)
+
+    def get(self, request):
+        pref = self._get_or_create_pref(request.user)
+        serializer = NotificationPreferenceSerializer(pref)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        pref = self._get_or_create_pref(request.user)
+        serializer = NotificationPreferenceSerializer(pref, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

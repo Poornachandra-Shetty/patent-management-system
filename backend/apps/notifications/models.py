@@ -1,7 +1,8 @@
 """
-Notification Model
-==================
-In-app notifications for patent status changes and remarks.
+Notification Models
+===================
+In-app notifications for patent status changes and remarks,
+plus per-user notification preferences.
 """
 
 from django.db import models
@@ -80,3 +81,59 @@ class Notification(models.Model):
         if not self.is_read:
             self.is_read = True
             self.save(update_fields=['is_read'])
+
+
+class NotificationPreference(models.Model):
+    """
+    Per-user preference controlling which in-app notification events are
+    delivered. One row per user, created on first access with all defaults
+    enabled (get_or_create pattern).
+
+    Email delivery is not implemented in this portal; email fields are
+    reserved for future use and always stored as False.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notification_preference',
+        help_text='User this preference belongs to',
+    )
+
+    # ── In-app toggles ──────────────────────────────────────────
+    status_change_in_app = models.BooleanField(
+        default=True,
+        help_text='Receive in-app notifications when a patent status changes',
+    )
+    remark_added_in_app = models.BooleanField(
+        default=True,
+        help_text='Receive in-app notifications when a remark is added to a patent',
+    )
+
+    # ── Email toggles (reserved — email not yet implemented) ────
+    status_change_email = models.BooleanField(
+        default=False,
+        help_text='Email notifications for status changes (not yet implemented)',
+    )
+    remark_added_email = models.BooleanField(
+        default=False,
+        help_text='Email notifications for remarks (not yet implemented)',
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Notification Preference'
+        verbose_name_plural = 'Notification Preferences'
+
+    def __str__(self) -> str:
+        return f'NotificationPreference for {self.user}'
+
+    @classmethod
+    def for_user(cls, user) -> 'NotificationPreference':
+        """
+        Return (or lazily create) the preference row for the given user.
+        Safe to call from notification services.
+        """
+        pref, _ = cls.objects.get_or_create(user=user)
+        return pref
