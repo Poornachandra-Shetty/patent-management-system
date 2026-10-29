@@ -5,7 +5,8 @@ from apps.departments.models import Department
 
 class UserRole(models.TextChoices):
     APPLICANT = 'applicant', 'Applicant'
-    SCRUTINIZER = 'scrutinizer', 'Scrutinizer'
+    SCRUTINIZER = 'scrutinizer', 'Scrutinizer / Review Team'
+    REVIEW_TEAM = 'review_team', 'Review Team'
     CONSULTANT = 'consultant', 'Consultant'
     ADMIN = 'admin', 'Admin'
 

@@ -242,3 +242,37 @@ class DocumentSecurityTestCase(APITestCase):
         self.client.force_authenticate(user=self.admin)
         response = self.client.get(download_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_upload_stage_reports(self):
+        self.client.force_authenticate(user=self.applicant)
+        pdf_content = b"%PDF-1.4 sample patent report content"
+        dummy_file = SimpleUploadedFile("report.pdf", pdf_content, content_type="application/pdf")
+
+        # Applicant uploads mandatory patent report
+        url = reverse("document-list")
+        response = self.client.post(
+            url,
+            {
+                "application": self.patent.id,
+                "doc_type": DocumentType.APPLICANT_PATENT_REPORT,
+                "file": dummy_file,
+            },
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["doc_type"], DocumentType.APPLICANT_PATENT_REPORT)
+
+        # Consultant uploads evaluation report
+        self.client.force_authenticate(user=self.consultant)
+        eval_file = SimpleUploadedFile("consultant_eval.pdf", pdf_content, content_type="application/pdf")
+        response2 = self.client.post(
+            url,
+            {
+                "application": self.patent.id,
+                "doc_type": DocumentType.CONSULTANT_EVALUATION_REPORT,
+                "file": eval_file,
+            },
+            format="multipart",
+        )
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response2.data["doc_type"], DocumentType.CONSULTANT_EVALUATION_REPORT)

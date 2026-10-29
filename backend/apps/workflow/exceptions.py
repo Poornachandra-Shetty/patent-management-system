@@ -31,6 +31,10 @@ class InvalidConsultantError(WorkflowError):
     """Raised when consultant_id does not refer to an active consultant user."""
 
 
+class MissingRequiredDocumentError(WorkflowError):
+    """Raised when a required stage document is missing for a transition."""
+
+
 def http_status_for(exc: WorkflowError) -> int:
     """Map a workflow exception to an HTTP status code."""
     if isinstance(exc, TerminalStateError):
@@ -39,6 +43,6 @@ def http_status_for(exc: WorkflowError) -> int:
         return http_status.HTTP_403_FORBIDDEN
     if isinstance(exc, (PatentAccessDeniedError, InvalidConsultantError)):
         return http_status.HTTP_403_FORBIDDEN
-    if isinstance(exc, ConsultantRequiredError):
+    if isinstance(exc, (ConsultantRequiredError, MissingRequiredDocumentError)):
         return http_status.HTTP_400_BAD_REQUEST
     return http_status.HTTP_400_BAD_REQUEST

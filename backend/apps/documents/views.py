@@ -32,11 +32,21 @@ class DocumentViewSet(viewsets.ModelViewSet):
             ).select_related('application', 'uploaded_by')
 
         if role == 'consultant':
+            from django.db.models import Q
             return Document.objects.filter(
-                application__assigned_to=user
+                Q(application__assigned_to=user) |
+                Q(
+                    application__assigned_to__isnull=True,
+                    application__status__in=[
+                        PatentApplicationStatus.SUBMITTED,
+                        PatentApplicationStatus.UNDER_CONSULTANT_REVIEW,
+                        PatentApplicationStatus.PENDING_FINAL_APPROVAL,
+                        PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
+                    ]
+                )
             ).select_related('application', 'uploaded_by')
 
-        if role == 'scrutinizer':
+        if role in ('scrutinizer', 'review_team'):
             return Document.objects.exclude(
                 application__status=PatentApplicationStatus.DRAFT
             ).select_related('application', 'uploaded_by')
@@ -54,6 +64,9 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 raise PermissionDenied("You can only upload documents to your own patent applications.")
             if application.status not in (PatentApplicationStatus.DRAFT, PatentApplicationStatus.SUBMITTED):
                 raise PermissionDenied("Cannot attach documents while application is under formal evaluation.")
+        elif role == 'consultant':
+            if application.assigned_to_id not in (None, user.pk):
+                raise PermissionDenied("You can only attach evaluation reports to applications in your consultation queue.")
 
         uploaded_file = serializer.validated_data.get('file') or self.request.FILES.get('file')
         file_size = uploaded_file.size if uploaded_file else None

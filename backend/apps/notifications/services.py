@@ -68,7 +68,7 @@ def create_status_change_notification(
             )
             notifications.append(notification)
 
-    # Notify the assigned consultant if status is UNDER_SCRUTINY or FORWARDED_TO_CONSULTANT
+    # Notify the assigned consultant if status is relevant to consultant review
     if (patent.assigned_to and
         patent.assigned_to.is_active and
         patent.assigned_to != patent.applicant and

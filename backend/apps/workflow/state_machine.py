@@ -3,14 +3,24 @@ Workflow State Machine
 ======================
 Defines which roles are allowed to perform which status transitions.
 
-Transition map:
-    DRAFT               → SUBMITTED               (applicant)
-    SUBMITTED           → UNDER_SCRUTINY          (scrutinizer, admin)
-    SUBMITTED           → REJECTED                (scrutinizer, admin)
-    UNDER_SCRUTINY      → FORWARDED_TO_CONSULTANT (scrutinizer, admin)
-    UNDER_SCRUTINY      → REJECTED                (scrutinizer, admin)
-    FORWARDED_TO_CONSULTANT → APPROVED            (consultant, admin)
-    FORWARDED_TO_CONSULTANT → REJECTED            (consultant, admin)
+Revised Transition map:
+    DRAFT                   → SUBMITTED               (applicant, admin)
+    SUBMITTED               → UNDER_CONSULTANT_REVIEW (consultant, admin)
+    SUBMITTED               → UNDER_REVIEW_TEAM       (consultant, admin)
+    SUBMITTED               → REJECTED                (consultant, admin)
+    UNDER_CONSULTANT_REVIEW → UNDER_REVIEW_TEAM       (consultant, admin)
+    UNDER_CONSULTANT_REVIEW → REJECTED                (consultant, admin)
+    UNDER_REVIEW_TEAM       → PENDING_FINAL_APPROVAL  (review_team, scrutinizer, admin)
+    UNDER_REVIEW_TEAM       → REJECTED                (review_team, scrutinizer, admin)
+    PENDING_FINAL_APPROVAL  → APPROVED                (consultant, admin)
+    PENDING_FINAL_APPROVAL  → REJECTED                (consultant, admin)
+
+Legacy transitions preserved for backwards compatibility:
+    SUBMITTED               → UNDER_SCRUTINY          (scrutinizer, review_team, admin)
+    UNDER_SCRUTINY          → FORWARDED_TO_CONSULTANT (scrutinizer, review_team, admin)
+    UNDER_SCRUTINY          → REJECTED                (scrutinizer, review_team, admin)
+    FORWARDED_TO_CONSULTANT → APPROVED                (consultant, admin)
+    FORWARDED_TO_CONSULTANT → REJECTED                (consultant, admin)
 """
 
 from apps.patents.models import PatentApplicationStatus as S
@@ -21,16 +31,32 @@ TRANSITIONS: dict[str, dict[str, list[str]]] = {
         S.SUBMITTED: ['applicant', 'admin'],
     },
     S.SUBMITTED: {
-        S.UNDER_SCRUTINY: ['scrutinizer', 'admin'],
-        S.REJECTED:       ['scrutinizer', 'admin'],
+        S.UNDER_CONSULTANT_REVIEW: ['consultant', 'admin'],
+        S.UNDER_REVIEW_TEAM:       ['consultant', 'admin'],
+        S.REJECTED:                ['consultant', 'admin', 'scrutinizer', 'review_team'],
+        # Legacy support
+        S.UNDER_SCRUTINY:          ['scrutinizer', 'review_team', 'admin'],
     },
+    S.UNDER_CONSULTANT_REVIEW: {
+        S.UNDER_REVIEW_TEAM:       ['consultant', 'admin'],
+        S.REJECTED:                ['consultant', 'admin'],
+    },
+    S.UNDER_REVIEW_TEAM: {
+        S.PENDING_FINAL_APPROVAL:  ['scrutinizer', 'review_team', 'admin'],
+        S.REJECTED:                ['scrutinizer', 'review_team', 'admin'],
+    },
+    S.PENDING_FINAL_APPROVAL: {
+        S.APPROVED:                ['consultant', 'admin'],
+        S.REJECTED:                ['consultant', 'admin'],
+    },
+    # Legacy flow support
     S.UNDER_SCRUTINY: {
-        S.FORWARDED_TO_CONSULTANT: ['scrutinizer', 'admin'],
-        S.REJECTED:                ['scrutinizer', 'admin'],
+        S.FORWARDED_TO_CONSULTANT: ['scrutinizer', 'review_team', 'admin'],
+        S.REJECTED:                ['scrutinizer', 'review_team', 'admin'],
     },
     S.FORWARDED_TO_CONSULTANT: {
-        S.APPROVED: ['consultant', 'admin'],
-        S.REJECTED: ['consultant', 'admin'],
+        S.APPROVED:                ['consultant', 'admin'],
+        S.REJECTED:                ['consultant', 'admin'],
     },
 }
 

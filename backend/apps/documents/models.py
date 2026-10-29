@@ -3,6 +3,9 @@ from django.conf import settings
 from apps.patents.models import PatentApplication
 
 class DocumentType(models.TextChoices):
+    APPLICANT_PATENT_REPORT = 'applicant_patent_report', 'Applicant Patent Report'
+    CONSULTANT_EVALUATION_REPORT = 'consultant_evaluation_report', 'Consultant Evaluation Report'
+    INTERNAL_REVIEW_REPORT = 'internal_review_report', 'Internal Review Report'
     SUPPORTING_DOCUMENTS = 'supporting_documents', 'Supporting Documents'
     PATENT_FORM = 'patent_form', 'Patent Form'
     NDA = 'nda', 'Non-Disclosure Agreement (NDA)'
@@ -19,7 +22,7 @@ class Document(models.Model):
         null=True,
         related_name='uploaded_documents'
     )
-    doc_type = models.CharField(max_length=30, choices=DocumentType.choices)
+    doc_type = models.CharField(max_length=40, choices=DocumentType.choices)
     file = models.FileField(upload_to='patent_documents/%Y/%m/')
     file_size = models.IntegerField(null=True, blank=True, help_text="File size in bytes")
     mime_type = models.CharField(max_length=100, blank=True, default='')
