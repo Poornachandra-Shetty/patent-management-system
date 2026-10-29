@@ -25,8 +25,9 @@ function RemarksList({ applicationId }) {
     const result = await getRemarks(applicationId)
 
     if (result.success) {
-      // Handle array response or object with remarks array
-      const remarksData = result.data.remarks || result.data || []
+      const remarksData = Array.isArray(result.data)
+        ? result.data
+        : result.data?.results || result.data?.remarks || []
       setRemarks(Array.isArray(remarksData) ? remarksData : [])
     } else {
       setError(result.error)
@@ -99,7 +100,7 @@ function RemarksList({ applicationId }) {
           <div key={remark.id || index} className="remark-item">
             <div className="remark-item__header">
               <span className="remark-item__reviewer">
-                {remark.reviewer_name || remark.user_name || 'Reviewer'}
+                {remark.user_detail?.name || remark.reviewer_name || remark.user_name || 'Reviewer'}
               </span>
               <span className="remark-item__date">
                 {formatDate(remark.created_at)}

@@ -46,14 +46,35 @@ export async function getPatentDetail(id) {
 }
 
 /**
- * Update patent (assign consultant)
+ * Update patent fields
  * @param {number|string} id - Patent ID
- * @param {object} data - Update data (e.g., {consultant: 5})
+ * @param {object} data - Fields accepted by the patent serializer
  * @returns {Promise<{success: boolean, data?: object, error?: string}>}
  */
 export async function updatePatent(id, data) {
   try {
     const response = await api.patch(`/patents/${id}/`, data)
+    return {
+      success: true,
+      data: response.data,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: getErrorMessage(error),
+    }
+  }
+}
+
+/**
+ * Transition a patent through the workflow
+ * @param {string} patentId - Human-facing patent ID
+ * @param {object} data - Workflow transition data
+ * @returns {Promise<{success: boolean, data?: object, error?: string}>}
+ */
+export async function transitionPatent(patentId, data) {
+  try {
+    const response = await api.post(`/workflow/${encodeURIComponent(patentId)}/transition/`, data)
     return {
       success: true,
       data: response.data,
@@ -74,11 +95,11 @@ export async function updatePatent(id, data) {
 export async function getReviews(patentId) {
   try {
     const response = await api.get('/reviews/', {
-      params: { patent: patentId },
+      params: { application: patentId },
     })
     return {
       success: true,
-      data: response.data,
+      data: response.data.results,
     }
   } catch (error) {
     return {
@@ -90,7 +111,7 @@ export async function getReviews(patentId) {
 
 /**
  * Create a review/remark
- * @param {object} data - Review data {patent, remark, visibility}
+ * @param {object} data - Review fields accepted by the review serializer
  * @returns {Promise<{success: boolean, data?: object, error?: string}>}
  */
 export async function createReview(data) {
@@ -115,12 +136,21 @@ export async function createReview(data) {
  */
 export async function getUsersByRole(role) {
   try {
-    const response = await api.get('/users/', {
-      params: { role },
+    let response = await api.get('/auth/users/', {
+      params: { page_size: 100 },
     })
+    const users = [...(response.data.results || [])]
+
+    while (response.data.next) {
+      response = await api.get(response.data.next)
+      users.push(...(response.data.results || []))
+    }
+
     return {
       success: true,
-      data: response.data,
+      data: {
+        results: role ? users.filter((user) => user.role === role) : users,
+      },
     }
   } catch (error) {
     return {
@@ -153,6 +183,7 @@ export default {
   getPatents,
   getPatentDetail,
   updatePatent,
+  transitionPatent,
   getReviews,
   createReview,
   getUsersByRole,

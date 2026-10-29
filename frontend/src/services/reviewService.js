@@ -24,10 +24,12 @@ export async function getRemarks(applicationId) {
   }
 
   try {
-    const response = await api.get(`${API_ENDPOINTS.REVIEWS}?application_id=${applicationId}`)
+    const response = await api.get(API_ENDPOINTS.REVIEWS, {
+      params: { application: applicationId },
+    })
     return {
       success: true,
-      data: response.data,
+      data: response.data.results,
     }
   } catch (error) {
     return {

@@ -3,15 +3,18 @@
  * Multi-field form for patent application submission
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Input, Card } from '../common'
-import { DEPARTMENTS, PATENT_CATEGORIES } from '../../utils/constants'
-import { createPatent } from '../../services/patentService'
+import { PATENT_CATEGORIES } from '../../utils/constants'
+import api, { getErrorMessage } from '../../services/api'
+import { createPatent, submitPatent } from '../../services/patentService'
 import './PatentForm.css'
 
 function PatentForm() {
   const navigate = useNavigate()
+  const [departments, setDepartments] = useState([])
+  const [loadingDepartments, setLoadingDepartments] = useState(true)
   
   // Form state
   const [formData, setFormData] = useState({
@@ -30,6 +33,21 @@ function PatentForm() {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const loadDepartments = async () => {
+      try {
+        const response = await api.get('/departments/')
+        setDepartments(response.data?.results || [])
+      } catch (requestError) {
+        setError(getErrorMessage(requestError))
+      } finally {
+        setLoadingDepartments(false)
+      }
+    }
+
+    loadDepartments()
+  }, [])
   
   // Handle input change
   const handleChange = (e) => {
@@ -75,6 +93,14 @@ function PatentForm() {
         newErrors[key] = `${label} is required`
       }
     })
+
+    formData.inventor_details.split(/\r?\n/).forEach((line) => {
+      if (!line.trim()) return
+      const inventorParts = line.split('|')
+      if (inventorParts.length !== 2 || !inventorParts[0].trim() || !inventorParts[1].trim()) {
+        newErrors.inventor_details = 'Enter each inventor as Name | USN/Employee ID, one per line'
+      }
+    })
     
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -85,23 +111,58 @@ function PatentForm() {
     if (!validateForm()) {
       return
     }
+
+    if (!departments.length) {
+      setError('Departments are unavailable. Please try again later.')
+      return
+    }
     
     setLoading(true)
     setError(null)
     
-    const result = await createPatent({
-      ...formData,
-      status,
-    })
-    
-    setLoading(false)
-    
-    if (result.success) {
-      // Navigate to patent details
+    try {
+      const departmentId = Number(formData.department)
+      const inventors = formData.inventor_details
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line, index) => {
+          const [name, usnOrEmpId] = line.split('|').map((value) => value.trim())
+          return {
+            name,
+            usn_or_emp_id: usnOrEmpId,
+            department: departmentId,
+            is_primary_inventor: index === 0,
+          }
+        })
+
+      const result = await createPatent({
+        title: formData.title,
+        department: departmentId,
+        category: formData.category,
+        abstract: formData.abstract,
+        keywords: formData.keywords,
+        problem_statement: formData.problem_statement,
+        novelty_description: formData.novelty_description,
+        proposed_application: formData.proposed_application,
+        inventors,
+      })
+
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
+
       const patentId = result.data.id || result.data.patent_id
+      if (status === 'submitted') {
+        const submitResult = await submitPatent(patentId)
+        if (!submitResult.success) {
+          window.alert(`Draft saved, but submission failed: ${submitResult.error}`)
+        }
+      }
       navigate(`/patents/${patentId}`)
-    } else {
-      setError(result.error)
+    } finally {
+      setLoading(false)
     }
   }
   
@@ -146,10 +207,10 @@ function PatentForm() {
           <textarea
             name="inventor_details"
             className={`form-group__textarea ${errors.inventor_details ? 'form-group__textarea--error' : ''}`}
-            placeholder="Enter names and details of all inventors (one per line)"
+            placeholder="Enter one inventor per line as Name | USN/Employee ID"
             value={formData.inventor_details}
             onChange={handleChange}
-            disabled={loading}
+            disabled={loading || loadingDepartments}
             rows={4}
           />
           {errors.inventor_details && (
@@ -167,11 +228,11 @@ function PatentForm() {
             className={`form-group__select ${errors.department ? 'form-group__select--error' : ''}`}
             value={formData.department}
             onChange={handleChange}
-            disabled={loading}
+            disabled={loading || loadingDepartments}
           >
             <option value="">Select Department</option>
-            {DEPARTMENTS.map(dept => (
-              <option key={dept} value={dept}>{dept}</option>
+            {departments.map((department) => (
+              <option key={department.id} value={department.id}>{department.name}</option>
             ))}
           </select>
           {errors.department && (
@@ -297,7 +358,7 @@ function PatentForm() {
             variant="secondary"
             size="large"
             onClick={handleSaveDraft}
-            disabled={loading}
+            disabled={loading || loadingDepartments || !departments.length}
           >
             Save as Draft
           </Button>
@@ -306,7 +367,7 @@ function PatentForm() {
             variant="primary"
             size="large"
             loading={loading}
-            disabled={loading}
+            disabled={loading || loadingDepartments || !departments.length}
           >
             Submit for Review
           </Button>
