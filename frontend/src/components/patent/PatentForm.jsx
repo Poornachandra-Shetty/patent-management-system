@@ -9,12 +9,14 @@ import { Button, Input, Card } from '../common'
 import { PATENT_CATEGORIES } from '../../utils/constants'
 import api, { getErrorMessage } from '../../services/api'
 import { createPatent, submitPatent } from '../../services/patentService'
+import { uploadDocument } from '../../services/documentService'
 import './PatentForm.css'
 
 function PatentForm() {
   const navigate = useNavigate()
   const [departments, setDepartments] = useState([])
   const [loadingDepartments, setLoadingDepartments] = useState(true)
+  const [reportFile, setReportFile] = useState(null)
   
   // Form state
   const [formData, setFormData] = useState({
@@ -107,8 +109,17 @@ function PatentForm() {
   }
   
   // Handle submit
-  const handleSubmit = async (status = 'draft') => {
+  const handleSubmit = async (targetStatus = 'draft') => {
     if (!validateForm()) {
+      return
+    }
+
+    // Require report document if submitting directly for review
+    if (targetStatus === 'submitted' && !reportFile) {
+      setErrors(prev => ({
+        ...prev,
+        reportFile: 'Mandatory Patent Report (PDF) is required to submit for review. You can alternatively save as Draft.',
+      }))
       return
     }
 
@@ -154,12 +165,29 @@ function PatentForm() {
       }
 
       const patentId = result.data.id || result.data.patent_id
-      if (status === 'submitted') {
-        const submitResult = await submitPatent(patentId)
-        if (!submitResult.success) {
-          window.alert(`Draft saved, but submission failed: ${submitResult.error}`)
+
+      // Upload report file if attached
+      if (reportFile) {
+        const uploadResult = await uploadDocument(
+          patentId,
+          'applicant_patent_report',
+          reportFile
+        )
+        if (!uploadResult.success) {
+          window.alert(`Patent draft created, but document upload failed: ${uploadResult.error}`)
+          navigate(`/patents/${patentId}`)
+          return
         }
       }
+
+      // If requested status is 'submitted', perform transition
+      if (targetStatus === 'submitted') {
+        const submitResult = await submitPatent(patentId)
+        if (!submitResult.success) {
+          window.alert(`Patent saved with document, but submission transition failed: ${submitResult.error}`)
+        }
+      }
+
       navigate(`/patents/${patentId}`)
     } finally {
       setLoading(false)
@@ -348,6 +376,100 @@ function PatentForm() {
           />
           {errors.proposed_application && (
             <p className="form-group__error">{errors.proposed_application}</p>
+          )}
+        </div>
+
+        {/* Mandatory Patent Report Document (PDF) */}
+        <div className="form-group patent-form__upload-section">
+          <label className="form-group__label">
+            Patent Technical Report (PDF)
+            <span style={{ marginLeft: '6px', fontSize: '0.8rem', color: '#64748b' }}>
+              (Mandatory for submission, optional for draft)
+            </span>
+          </label>
+          <div style={{
+            border: '2px dashed var(--color-border)',
+            borderRadius: '12px',
+            padding: '20px',
+            background: reportFile ? '#f0fdf4' : '#f8fafc',
+            textAlign: 'center',
+            transition: 'border-color 0.2s',
+          }}>
+            <input
+              type="file"
+              id="patent-report-upload"
+              accept=".pdf"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
+                    setErrors(prev => ({ ...prev, reportFile: 'Please upload a valid PDF document.' }))
+                    return
+                  }
+                  if (file.size > 10 * 1024 * 1024) {
+                    setErrors(prev => ({ ...prev, reportFile: 'File size must not exceed 10 MB.' }))
+                    return
+                  }
+                  setReportFile(file)
+                  setErrors(prev => ({ ...prev, reportFile: '' }))
+                }
+              }}
+              disabled={loading}
+            />
+            {reportFile ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '1.4rem' }}>📄</span>
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ margin: 0, fontWeight: '600', color: '#047857' }}>{reportFile.name}</p>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    {(reportFile.size / 1024).toFixed(1)} KB • Ready to upload
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReportFile(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    fontSize: '1.2rem',
+                    marginLeft: '8px'
+                  }}
+                  title="Remove file"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <div>
+                <p style={{ margin: '0 0 8px', color: 'var(--color-text)', fontWeight: '500' }}>
+                  Drag & drop or select your Patent Report PDF
+                </p>
+                <label
+                  htmlFor="patent-report-upload"
+                  style={{
+                    display: 'inline-block',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    backgroundColor: 'var(--color-primary)',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '0.88rem',
+                    fontWeight: '600'
+                  }}
+                >
+                  Choose PDF File
+                </label>
+                <p style={{ margin: '8px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+                  Max size: 10 MB. PDF format only.
+                </p>
+              </div>
+            )}
+          </div>
+          {errors.reportFile && (
+            <p className="form-group__error" style={{ marginTop: '6px' }}>{errors.reportFile}</p>
           )}
         </div>
         

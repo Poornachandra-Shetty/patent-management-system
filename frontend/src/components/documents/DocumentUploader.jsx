@@ -13,7 +13,13 @@ function DocumentUploader({
   applicationId, 
   onUploadSuccess,
   existingDocuments = [],
-  disabled = false 
+  disabled = false,
+  allowedDocTypes = [
+    DOCUMENT_TYPES.APPLICANT_PATENT_REPORT,
+    DOCUMENT_TYPES.SUPPORTING_DOCUMENTS,
+    DOCUMENT_TYPES.PATENT_FORM,
+    DOCUMENT_TYPES.NDA,
+  ]
 }) {
   const fileInputRef = useRef(null)
   
@@ -143,13 +149,13 @@ function DocumentUploader({
           disabled={disabled || uploading}
         >
           <option value="">Select document type</option>
-          {Object.entries(DOCUMENT_TYPE_LABELS).map(([type, label]) => (
+          {allowedDocTypes.map((type) => (
             <option 
               key={type} 
               value={type}
               disabled={isTypeUploaded(type)}
             >
-              {label} {isTypeUploaded(type) ? '(Already uploaded)' : ''}
+              {DOCUMENT_TYPE_LABELS[type] || type} {isTypeUploaded(type) ? '(Already uploaded)' : ''}
             </option>
           ))}
         </select>

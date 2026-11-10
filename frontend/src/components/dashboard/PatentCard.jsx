@@ -15,8 +15,11 @@ function PatentCard({ patent }) {
     title,
     status,
     department,
+    department_detail,
     created_at,
   } = patent
+
+  const deptName = department_detail?.name || (typeof department === 'object' ? department?.name : department) || 'Department'
 
   // Format date
   const formattedDate = created_at
@@ -42,7 +45,7 @@ function PatentCard({ patent }) {
         <h3 className="patent-card__title">{title}</h3>
         
         <div className="patent-card__meta">
-          <span className="patent-card__department">{department}</span>
+          <span className="patent-card__department">{deptName}</span>
           <span className="patent-card__date">{formattedDate}</span>
         </div>
         

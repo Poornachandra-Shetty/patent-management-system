@@ -1,6 +1,6 @@
 /**
  * DashboardPage
- * Main dashboard for applicants to view and manage their patents
+ * Main dashboard for applicants to view and manage their patent applications
  */
 
 import { useState, useEffect } from 'react'
@@ -37,17 +37,12 @@ function DashboardPage() {
     const result = await getMyPatents()
     
     if (result.success) {
-      // Handle API response structure
-      // DRF pagination: { count, results: [] }
-      // or legacy: { patents: [] }
-      // or raw array: []
       const responseData = result.data
       const patentList = responseData.results || responseData.patents || (Array.isArray(responseData) ? responseData : [])
       const responseStats = responseData.stats || null
 
       setPatents(patentList)
 
-      // Calculate stats from patents if not provided by API
       if (responseStats) {
         setStats(responseStats)
       } else if (Array.isArray(patentList)) {
@@ -82,16 +77,16 @@ function DashboardPage() {
         <div className="dashboard__header">
           <div className="dashboard__greeting">
             <h1 className="dashboard__title">
-              Welcome, {user?.name || 'Applicant'}
+              Applicant Portal
             </h1>
             <p className="dashboard__subtitle">
-              Manage your patent applications and track their status
+              Welcome back, <strong>{user?.name || 'Applicant'}</strong> • {user?.department_detail?.name || 'Academic Department'}
             </p>
           </div>
           <div className="dashboard__actions">
             <Link to="/patents/new">
               <Button variant="primary" size="large">
-                + New Patent Application
+                + File New Patent Application
               </Button>
             </Link>
           </div>
@@ -105,22 +100,22 @@ function DashboardPage() {
           </Card>
           <Card className="stat-card">
             <div className="stat-card__number">{stats.drafts}</div>
-            <div className="stat-card__label">Drafts</div>
+            <div className="stat-card__label">In Draft</div>
           </Card>
           <Card className="stat-card">
             <div className="stat-card__number">{stats.under_review}</div>
-            <div className="stat-card__label">Under Review</div>
+            <div className="stat-card__label">Under Formal Review</div>
           </Card>
           <Card className="stat-card">
             <div className="stat-card__number">{stats.approved}</div>
-            <div className="stat-card__label">Approved</div>
+            <div className="stat-card__label">Approved for Filing</div>
           </Card>
         </div>
 
         {/* Patents List Section */}
         <section className="dashboard__patents">
           <div className="section-header">
-            <h2 className="section-header__title">My Patent Applications</h2>
+            <h2 className="section-header__title">My Applications</h2>
             {!loading && !error && patents.length > 0 && (
               <span className="section-header__count">
                 {patents.length} application{patents.length !== 1 ? 's' : ''}
@@ -136,26 +131,112 @@ function DashboardPage() {
           />
         </section>
 
-        {/* Quick Links */}
-        <section className="dashboard__quick-links">
-          <Card title="Quick Links" subtitle="Helpful resources">
-            <div className="quick-links">
-              <a href="#" className="quick-link">
-                <span className="quick-link__icon">📄</span>
-                <span className="quick-link__text">SJEC Patent Policy</span>
-              </a>
-              <a href="#" className="quick-link">
-                <span className="quick-link__icon">📋</span>
-                <span className="quick-link__text">Patent Application Form</span>
-              </a>
-              <a href="#" className="quick-link">
-                <span className="quick-link__icon">🔒</span>
-                <span className="quick-link__text">NDA Template</span>
-              </a>
-              <a href="#" className="quick-link">
-                <span className="quick-link__icon">❓</span>
-                <span className="quick-link__text">FAQ</span>
-              </a>
+        {/* Workflow Stage Guide */}
+        <section className="dashboard__workflow-guide" style={{ marginTop: '36px' }}>
+          <Card padding="large">
+            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem', fontWeight: '700', color: 'var(--color-primary-dark)' }}>
+              Patent Evaluation Workflow Overview
+            </h3>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '16px'
+            }}>
+              <div style={{
+                background: '#f8fafc',
+                padding: '16px',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  background: '#e2e8f0',
+                  fontSize: '0.75rem',
+                  fontWeight: '700',
+                  color: '#475569',
+                  marginBottom: '8px'
+                }}>
+                  Step 1
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.95rem' }}>Submission & Disclosures</h4>
+                <p style={{ margin: 0, fontSize: '0.84rem', color: '#64748b', lineHeight: 1.5 }}>
+                  Applicant provides technical invention details and uploads the mandatory Patent Report (PDF).
+                </p>
+              </div>
+
+              <div style={{
+                background: '#f8fafc',
+                padding: '16px',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  background: '#ede9fe',
+                  fontSize: '0.75rem',
+                  fontWeight: '700',
+                  color: '#7c3aed',
+                  marginBottom: '8px'
+                }}>
+                  Step 2
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.95rem' }}>Consultant Review</h4>
+                <p style={{ margin: 0, fontSize: '0.84rem', color: '#64748b', lineHeight: 1.5 }}>
+                  External patent consultant evaluates novelty, attaches an Evaluation Report, and routes to committee.
+                </p>
+              </div>
+
+              <div style={{
+                background: '#f8fafc',
+                padding: '16px',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  background: '#fef3c7',
+                  fontSize: '0.75rem',
+                  fontWeight: '700',
+                  color: '#d97706',
+                  marginBottom: '8px'
+                }}>
+                  Step 3
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.95rem' }}>Internal Committee</h4>
+                <p style={{ margin: 0, fontSize: '0.84rem', color: '#64748b', lineHeight: 1.5 }}>
+                  Review team meets, reviews technical merit, attaches meeting report, and recommends decision.
+                </p>
+              </div>
+
+              <div style={{
+                background: '#f8fafc',
+                padding: '16px',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  background: '#dcfce7',
+                  fontSize: '0.75rem',
+                  fontWeight: '700',
+                  color: '#16a34a',
+                  marginBottom: '8px'
+                }}>
+                  Step 4
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '0.95rem' }}>Final Disposition</h4>
+                <p style={{ margin: 0, fontSize: '0.84rem', color: '#64748b', lineHeight: 1.5 }}>
+                  Consultant issues final approval or rejection with remarks for legal patent filing.
+                </p>
+              </div>
             </div>
           </Card>
         </section>
