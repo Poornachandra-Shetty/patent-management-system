@@ -70,10 +70,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value.lower().strip()
 
     def validate(self, attrs):
-        role = attrs.get('role')
-        allowed_roles = ['applicant', 'review_team']
-        if role not in allowed_roles:
-            attrs['role'] = 'applicant'
+        # Public registration is strictly for applicants (students and faculty).
+        # Review committee members are provisioned by Admin; Consultants are predefined.
+        attrs['role'] = 'applicant'
         if not attrs.get('usn_or_emp_id'):
             raise serializers.ValidationError({'usn_or_emp_id': 'This field is required.'})
         return attrs
