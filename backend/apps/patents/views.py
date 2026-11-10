@@ -42,19 +42,7 @@ class PatentApplicationViewSet(viewsets.ModelViewSet):
         elif role == 'applicant':
             return queryset.filter(applicant=user)
         elif role == 'consultant':
-            from django.db.models import Q
-            return queryset.filter(
-                Q(assigned_to=user) |
-                Q(
-                    assigned_to__isnull=True,
-                    status__in=[
-                        PatentApplicationStatus.SUBMITTED,
-                        PatentApplicationStatus.UNDER_CONSULTANT_REVIEW,
-                        PatentApplicationStatus.PENDING_FINAL_APPROVAL,
-                        PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
-                    ]
-                )
-            )
+            return queryset.exclude(status=PatentApplicationStatus.DRAFT)
         elif role in ('scrutinizer', 'review_team'):
             return queryset.exclude(status=PatentApplicationStatus.DRAFT)
         return queryset.none()

@@ -32,18 +32,8 @@ class DocumentViewSet(viewsets.ModelViewSet):
             ).select_related('application', 'uploaded_by')
 
         if role == 'consultant':
-            from django.db.models import Q
-            return Document.objects.filter(
-                Q(application__assigned_to=user) |
-                Q(
-                    application__assigned_to__isnull=True,
-                    application__status__in=[
-                        PatentApplicationStatus.SUBMITTED,
-                        PatentApplicationStatus.UNDER_CONSULTANT_REVIEW,
-                        PatentApplicationStatus.PENDING_FINAL_APPROVAL,
-                        PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
-                    ]
-                )
+            return Document.objects.exclude(
+                application__status=PatentApplicationStatus.DRAFT
             ).select_related('application', 'uploaded_by')
 
         if role in ('scrutinizer', 'review_team'):
