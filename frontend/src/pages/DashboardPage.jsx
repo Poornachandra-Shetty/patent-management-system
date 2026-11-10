@@ -55,7 +55,14 @@ function DashboardPage() {
           total: responseData.count ?? patentList.length,
           drafts: patentList.filter(p => p.status === 'draft').length,
           under_review: patentList.filter(p =>
-            ['submitted', 'under_scrutiny', 'forwarded_to_consultant'].includes(p.status)
+            [
+              'submitted',
+              'under_consultant_review',
+              'under_review_team',
+              'pending_final_approval',
+              'under_scrutiny',
+              'forwarded_to_consultant',
+            ].includes(p.status)
           ).length,
           approved: patentList.filter(p => p.status === 'approved').length,
         }
