@@ -27,12 +27,24 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized - redirect to login
-    if (error.response?.status === 401) {
+    // Handle 401 Unauthorized - redirect to login ONLY for authenticated endpoints.
+    // Skip redirect when the request is to the login/register endpoint itself,
+    // so the login form can display the "Invalid credentials" error instead of
+    // silently bouncing the user back to the login page.
+    const requestUrl = error.config?.url || ''
+    const isAuthEndpoint =
+      requestUrl.includes('/auth/login/') ||
+      requestUrl.includes('/auth/register/') ||
+      requestUrl.includes('/auth/refresh/')
+
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('patent_auth_token')
       localStorage.removeItem('patent_refresh_token')
       localStorage.removeItem('patent_user_data')
-      window.location.href = '/login'
+      // Only redirect if we are not already on the login page
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
     }
 
     // Handle network errors

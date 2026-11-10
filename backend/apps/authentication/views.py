@@ -19,11 +19,18 @@ User = get_user_model()
 
 
 class SJECTokenObtainPairView(TokenObtainPairView):
+    """
+    JWT login endpoint. Explicitly AllowAny so the global IsAuthenticated
+    default permission does not block unauthenticated login requests.
+    """
     serializer_class = SJECTokenObtainPairSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class EmailTokenObtainPairView(TokenObtainPairView):
+    """Email-based JWT login (alias used by some older client paths)."""
     serializer_class = EmailTokenObtainPairSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class RegisterView(generics.CreateAPIView):
