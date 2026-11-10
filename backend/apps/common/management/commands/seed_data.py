@@ -82,6 +82,14 @@ class Command(BaseCommand):
                 'department': departments['ECE'],
             },
             {
+                'email': 'consultant2@sjec.ac.in',
+                'name': 'Advocate Senior IP Consultant',
+                'usn_or_emp_id': 'EMP006',
+                'mobile': '9876543216',
+                'role': 'consultant',
+                'department': departments['ECE'],
+            },
+            {
                 'email': 'student@sjec.ac.in',
                 'name': 'Ananya Student',
                 'usn_or_emp_id': 'USN2026001',

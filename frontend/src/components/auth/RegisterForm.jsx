@@ -65,8 +65,8 @@ function RegisterForm() {
 
     if (!formData.email.trim()) {
       nextErrors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) || !formData.email.endsWith('@sjec.ac.in')) {
-      nextErrors.email = 'Use a valid @sjec.ac.in email address'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      nextErrors.email = 'Please enter a valid email address'
     }
 
     if (!formData.password) {
@@ -122,9 +122,9 @@ function RegisterForm() {
   return (
     <Card className="register-form__card" padding="large">
       <div className="register-form__header">
-        <h2 className="register-form__title">Create Account</h2>
+        <h2 className="register-form__title">Create Applicant Account</h2>
         <p className="register-form__subtitle">
-          Register with your SJEC email and department details.
+          Register with your email and department details to submit patent applications.
         </p>
       </div>
 
@@ -151,8 +151,8 @@ function RegisterForm() {
           <Input
             type="email"
             name="email"
-            label="SJEC Email"
-            placeholder="student@sjec.ac.in"
+            label="Email Address"
+            placeholder="name@example.com"
             value={formData.email}
             onChange={handleChange}
             error={errors.email}
