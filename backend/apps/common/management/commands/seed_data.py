@@ -130,9 +130,9 @@ class Command(BaseCommand):
                     )
             else:
                 created = False
-            if created:
-                user.set_password('password123')
-                user.save()
+            # Always ensure demo users have the standard password for demo logins
+            user.set_password('password123')
+            user.save()
             users[u_info['role'] + '_' + u_info['usn_or_emp_id']] = user
 
         self.stdout.write(self.style.SUCCESS(f'Created {len(users)} demo users (Password: password123).'))

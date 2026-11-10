@@ -48,9 +48,9 @@ class PatentApplicationCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'patent_id', 'title', 'department', 'category', 'abstract',
             'keywords', 'problem_statement', 'novelty_description',
-            'proposed_application', 'inventors'
+            'proposed_application', 'inventors', 'status'
         ]
-        read_only_fields = ['id', 'patent_id']
+        read_only_fields = ['id', 'patent_id', 'status']
 
     def create(self, validated_data):
         inventors_data = validated_data.pop('inventors', [])
