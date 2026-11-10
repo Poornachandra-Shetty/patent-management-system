@@ -8,7 +8,7 @@ import './FilterPanel.css'
 import { PATENT_STATUS, STATUS_LABELS } from '../../utils/constants'
 
 function FilterPanel({ onFilter, loading = false, departments = [] }) {
-  const [status, setStatus] = useState('submitted')
+  const [status, setStatus] = useState('')
   const [department, setDepartment] = useState('')
   const [search, setSearch] = useState('')
 
@@ -22,11 +22,11 @@ function FilterPanel({ onFilter, loading = false, departments = [] }) {
   }
 
   const handleReset = () => {
-    setStatus('submitted')
+    setStatus('')
     setDepartment('')
     setSearch('')
     onFilter({
-      status: 'submitted',
+      status: '',
       department: '',
       search: '',
     })
@@ -46,15 +46,21 @@ function FilterPanel({ onFilter, loading = false, departments = [] }) {
             onChange={(e) => setStatus(e.target.value)}
             disabled={loading}
           >
-            <option value="">All</option>
+            <option value="">All Statuses</option>
+            <option value={PATENT_STATUS.DRAFT}>
+              {STATUS_LABELS[PATENT_STATUS.DRAFT] || 'Draft'}
+            </option>
             <option value={PATENT_STATUS.SUBMITTED}>
               {STATUS_LABELS[PATENT_STATUS.SUBMITTED]}
             </option>
-            <option value={PATENT_STATUS.UNDER_SCRUTINY}>
-              {STATUS_LABELS[PATENT_STATUS.UNDER_SCRUTINY]}
+            <option value={PATENT_STATUS.UNDER_CONSULTANT_REVIEW}>
+              {STATUS_LABELS[PATENT_STATUS.UNDER_CONSULTANT_REVIEW] || 'Under Consultant Review'}
             </option>
-            <option value={PATENT_STATUS.FORWARDED_TO_CONSULTANT}>
-              {STATUS_LABELS[PATENT_STATUS.FORWARDED_TO_CONSULTANT]}
+            <option value={PATENT_STATUS.UNDER_REVIEW_TEAM}>
+              {STATUS_LABELS[PATENT_STATUS.UNDER_REVIEW_TEAM] || 'Under Review Team'}
+            </option>
+            <option value={PATENT_STATUS.PENDING_FINAL_APPROVAL}>
+              {STATUS_LABELS[PATENT_STATUS.PENDING_FINAL_APPROVAL] || 'Pending Final Approval'}
             </option>
             <option value={PATENT_STATUS.APPROVED}>
               {STATUS_LABELS[PATENT_STATUS.APPROVED]}

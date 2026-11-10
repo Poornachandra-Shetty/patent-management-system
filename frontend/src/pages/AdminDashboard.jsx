@@ -103,7 +103,7 @@ function AdminDashboard() {
   }
 
   const handleViewClick = (patentId) => {
-    navigate(`/patents/${patentId}`)
+    navigate(`/admin/patents/${patentId}`)
   }
 
   const handleFilterSubmit = (newFilters) => {

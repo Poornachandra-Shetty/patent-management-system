@@ -12,7 +12,7 @@ export function usePatents() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [filters, setFilters] = useState({
-    status: 'submitted',
+    status: '',
     department: '',
     search: '',
     page: 1,
@@ -62,7 +62,7 @@ export function usePatents() {
   // Reset filters
   const resetFilters = useCallback(() => {
     const defaultFilters = {
-      status: 'submitted',
+      status: '',
       department: '',
       search: '',
       page: 1,
