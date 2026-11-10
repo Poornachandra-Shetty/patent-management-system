@@ -9,10 +9,7 @@ import './App.css'
 
 const sidebarItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutGrid },
-  { label: 'Patents', to: '/patents/new', icon: FileText },
-  { label: 'Reviews', to: '/dashboard', icon: FileText },
-  { label: 'Workflow', to: '/dashboard', icon: Users },
-  { label: 'Notifications', to: '/dashboard', icon: Bell },
+  { label: 'New Application', to: '/patents/new', icon: FileText, roles: [USER_ROLES.APPLICANT] },
 ]
 
 function App() {
@@ -54,10 +51,7 @@ function AppContent() {
   ].includes(userRole)
 
   const filteredSidebarItems = sidebarItems.filter((item) => {
-    // Hide "Patents" (which opens New Patent form) from reviewers/admins
-    if (item.label === 'Patents' && isStaff) return false
-    // Hide "Reviews" from applicants (student/faculty)
-    if (item.label === 'Reviews' && !isStaff) return false
+    if (item.roles && !item.roles.includes(userRole)) return false
     return true
   })
 

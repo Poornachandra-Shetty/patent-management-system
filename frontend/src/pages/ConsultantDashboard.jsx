@@ -1,8 +1,9 @@
 /**
  * ConsultantDashboard Page
- * Dedicated dashboard for External Patent Consultants / Attorneys
- * Manages Stage 1: Technical evaluation report & routing to Review Team
- * Manages Stage 2: Final approval/rejection after committee meeting report
+ * Clean, direct portal for Patent Consultants:
+ * 1. View applicant patent disclosures & documents
+ * 2. Forward to Review Team committee
+ * 3. Give final Approval / Rejection after committee evaluation
  */
 
 import { useState, useEffect } from 'react'
@@ -25,14 +26,14 @@ function ConsultantDashboard() {
   const [toastMessage, setToastMessage] = useState(null)
   const [toastType, setToastType] = useState('info')
 
-  // Filter / Queue tab: 'evaluation' (Stage 1) | 'final' (Stage 2) | 'all'
+  // Active Queue: 'evaluation' | 'final' | 'committee' | 'all'
   const [activeQueue, setActiveQueue] = useState('evaluation')
 
-  // Evaluation Modal State
-  const [evalModalOpen, setEvalModalOpen] = useState(false)
+  // Forward to Review Team Modal State
+  const [forwardModalOpen, setForwardModalOpen] = useState(false)
   const [selectedPatent, setSelectedPatent] = useState(null)
   const [evalFile, setEvalFile] = useState(null)
-  const [evalNote, setEvalNote] = useState('')
+  const [forwardNote, setForwardNote] = useState('')
   const [processingAction, setProcessingAction] = useState(false)
 
   // Final Decision Modal State
@@ -63,57 +64,56 @@ function ConsultantDashboard() {
     setToastType(type)
   }
 
-  // Calculate metrics
-  const evaluationQueue = patents.filter(p =>
-    [PATENT_STATUS.SUBMITTED, PATENT_STATUS.UNDER_CONSULTANT_REVIEW, PATENT_STATUS.FORWARDED_TO_CONSULTANT].includes(p.status)
+  // Filter queues
+  const pendingEvaluationQueue = patents.filter(p =>
+    [
+      PATENT_STATUS.SUBMITTED,
+      PATENT_STATUS.UNDER_CONSULTANT_REVIEW,
+      PATENT_STATUS.FORWARDED_TO_CONSULTANT,
+    ].includes(p.status)
   )
-  const reviewTeamQueue = patents.filter(p => p.status === PATENT_STATUS.UNDER_REVIEW_TEAM)
-  const finalDecisionQueue = patents.filter(p => p.status === PATENT_STATUS.PENDING_FINAL_APPROVAL)
-  const approvedList = patents.filter(p => p.status === PATENT_STATUS.APPROVED)
+  const readyForFinalQueue = patents.filter(p => p.status === PATENT_STATUS.PENDING_FINAL_APPROVAL)
+  const inCommitteeQueue = patents.filter(p => p.status === PATENT_STATUS.UNDER_REVIEW_TEAM)
+  const completedList = patents.filter(p => [PATENT_STATUS.APPROVED, PATENT_STATUS.REJECTED].includes(p.status))
 
-  // Open Stage 1 Evaluation modal
-  const handleOpenEvaluation = (patent) => {
+  // Open Forward to Review Team modal
+  const handleOpenForward = (patent) => {
     setSelectedPatent(patent)
     setEvalFile(null)
-    setEvalNote('')
-    setEvalModalOpen(true)
+    setForwardNote('')
+    setForwardModalOpen(true)
   }
 
-  // Submit Stage 1 Evaluation (Upload Report + Forward to Review Team)
-  const handleSubmitEvaluation = async (e) => {
+  // Submit Forward to Review Team
+  const handleConfirmForward = async (e) => {
     e.preventDefault()
-    if (!evalFile) {
-      showToast('Please attach the Consultant Evaluation Report PDF.', 'warning')
-      return
-    }
-
     setProcessingAction(true)
-    try {
-      // 1. Upload mandatory consultant evaluation report PDF
-      const uploadRes = await documentService.uploadDocument(
-        selectedPatent.id,
-        DOCUMENT_TYPES.CONSULTANT_EVALUATION_REPORT,
-        evalFile
-      )
 
-      if (!uploadRes.success) {
-        showToast(uploadRes.error || 'Failed to upload evaluation report.', 'error')
-        setProcessingAction(false)
-        return
+    try {
+      // 1. If consultant attached an evaluation report PDF, upload it
+      if (evalFile) {
+        const uploadRes = await documentService.uploadDocument(
+          selectedPatent.id,
+          DOCUMENT_TYPES.CONSULTANT_EVALUATION_REPORT,
+          evalFile
+        )
+        if (!uploadRes.success) {
+          showToast(`Report upload failed: ${uploadRes.error}`, 'warning')
+        }
       }
 
       // 2. Transition patent status to UNDER_REVIEW_TEAM
       const transitionRes = await adminService.transitionPatent(selectedPatent.patent_id, {
         to_status: PATENT_STATUS.UNDER_REVIEW_TEAM,
-        note: evalNote || 'Consultant evaluation complete. Forwarded to Review Team committee.',
+        note: forwardNote || 'Consultant reviewed submission and forwarded to Review Team committee.',
       })
 
       if (transitionRes.success) {
-        showToast('Evaluation submitted! Patent forwarded to Review Team committee.', 'success')
-        setEvalModalOpen(false)
+        showToast('Application forwarded to Review Team committee successfully.', 'success')
+        setForwardModalOpen(false)
         fetchConsultantPatents()
       } else {
-        showToast(transitionRes.error || 'Evaluation uploaded but failed to update status.', 'error')
+        showToast(transitionRes.error || 'Failed to forward to review team.', 'error')
       }
     } catch (err) {
       showToast('An unexpected error occurred.', 'error')
@@ -123,7 +123,7 @@ function ConsultantDashboard() {
     }
   }
 
-  // Open Stage 2 Final Decision modal
+  // Open Final Decision modal
   const handleOpenDecision = (patent, type) => {
     setSelectedPatent(patent)
     setDecisionType(type)
@@ -148,7 +148,7 @@ function ConsultantDashboard() {
       })
 
       if (transitionRes.success) {
-        showToast(`Patent successfully ${decisionType === 'approved' ? 'Approved' : 'Rejected'}!`, 'success')
+        showToast(`Patent marked as ${decisionType === 'approved' ? 'Approved' : 'Rejected'}!`, 'success')
         setDecisionModalOpen(false)
         fetchConsultantPatents()
       } else {
@@ -162,21 +162,22 @@ function ConsultantDashboard() {
     }
   }
 
-  // Determine which list to show based on active tab
+  // Selected queue list
   let displayedPatents = patents
-  if (activeQueue === 'evaluation') displayedPatents = evaluationQueue
-  else if (activeQueue === 'final') displayedPatents = finalDecisionQueue
-  else if (activeQueue === 'committee') displayedPatents = reviewTeamQueue
+  if (activeQueue === 'evaluation') displayedPatents = pendingEvaluationQueue
+  else if (activeQueue === 'final') displayedPatents = readyForFinalQueue
+  else if (activeQueue === 'committee') displayedPatents = inCommitteeQueue
+  else if (activeQueue === 'all') displayedPatents = completedList
 
   return (
     <div className="consultant-dashboard">
       {/* Header */}
       <div className="consultant-dashboard__header">
         <div className="consultant-dashboard__welcome">
-          <span className="consultant-dashboard__tag">Consultant Portal</span>
-          <h1 className="consultant-dashboard__title">Welcome, {user?.name || 'Patent Consultant'}</h1>
+          <span className="consultant-dashboard__tag">Patent Consultant Console</span>
+          <h1 className="consultant-dashboard__title">Welcome, {user?.name || 'Consultant'}</h1>
           <p className="consultant-dashboard__subtitle">
-            Evaluate technical disclosures, upload novelty findings, and issue final patent decisions.
+            Review applicant disclosures, submit applications to the Review Team, and issue final patent decisions.
           </p>
         </div>
       </div>
@@ -186,46 +187,46 @@ function ConsultantDashboard() {
       )}
       {error && <Toast message={error} type="error" onClose={() => setError(null)} />}
 
-      {/* Metrics Row */}
+      {/* Queue Metric Cards */}
       <div className="consultant-dashboard__metrics">
         <div
           className={`consultant-stat-card ${activeQueue === 'evaluation' ? 'consultant-stat-card--active' : ''}`}
           onClick={() => setActiveQueue('evaluation')}
         >
-          <div className="consultant-stat-card__num">{evaluationQueue.length}</div>
-          <div className="consultant-stat-card__label">Stage 1: Pending Evaluation</div>
-          <div className="consultant-stat-card__hint">Requires Evaluation Report PDF</div>
-        </div>
-
-        <div
-          className={`consultant-stat-card ${activeQueue === 'committee' ? 'consultant-stat-card--active' : ''}`}
-          onClick={() => setActiveQueue('committee')}
-        >
-          <div className="consultant-stat-card__num">{reviewTeamQueue.length}</div>
-          <div className="consultant-stat-card__label">With Review Committee</div>
-          <div className="consultant-stat-card__hint">Internal review meeting in progress</div>
+          <div className="consultant-stat-card__num">{pendingEvaluationQueue.length}</div>
+          <div className="consultant-stat-card__label">Needs Review & Forward</div>
+          <div className="consultant-stat-card__hint">Forward to Review Team</div>
         </div>
 
         <div
           className={`consultant-stat-card ${activeQueue === 'final' ? 'consultant-stat-card--active' : ''}`}
           onClick={() => setActiveQueue('final')}
         >
-          <div className="consultant-stat-card__num">{finalDecisionQueue.length}</div>
-          <div className="consultant-stat-card__label">Stage 2: Final Decision Ready</div>
-          <div className="consultant-stat-card__hint">Committee report received</div>
+          <div className="consultant-stat-card__num">{readyForFinalQueue.length}</div>
+          <div className="consultant-stat-card__label">Ready for Final Decision</div>
+          <div className="consultant-stat-card__hint">Review Team report received</div>
+        </div>
+
+        <div
+          className={`consultant-stat-card ${activeQueue === 'committee' ? 'consultant-stat-card--active' : ''}`}
+          onClick={() => setActiveQueue('committee')}
+        >
+          <div className="consultant-stat-card__num">{inCommitteeQueue.length}</div>
+          <div className="consultant-stat-card__label">With Review Committee</div>
+          <div className="consultant-stat-card__hint">Awaiting committee review</div>
         </div>
 
         <div
           className={`consultant-stat-card ${activeQueue === 'all' ? 'consultant-stat-card--active' : ''}`}
           onClick={() => setActiveQueue('all')}
         >
-          <div className="consultant-stat-card__num">{approvedList.length}</div>
-          <div className="consultant-stat-card__label">Total Approved</div>
-          <div className="consultant-stat-card__hint">Completed filings</div>
+          <div className="consultant-stat-card__num">{completedList.length}</div>
+          <div className="consultant-stat-card__label">Decided Applications</div>
+          <div className="consultant-stat-card__hint">Approved / Rejected</div>
         </div>
       </div>
 
-      {/* Main Table Card */}
+      {/* Queue Table */}
       <div className="consultant-dashboard__card">
         <div className="consultant-dashboard__toolbar">
           <div className="consultant-dashboard__queue-tabs">
@@ -233,34 +234,34 @@ function ConsultantDashboard() {
               className={`consultant-tab-btn ${activeQueue === 'evaluation' ? 'consultant-tab-btn--active' : ''}`}
               onClick={() => setActiveQueue('evaluation')}
             >
-              Pending Evaluation ({evaluationQueue.length})
+              Needs Review ({pendingEvaluationQueue.length})
             </button>
             <button
               className={`consultant-tab-btn ${activeQueue === 'final' ? 'consultant-tab-btn--active' : ''}`}
               onClick={() => setActiveQueue('final')}
             >
-              Final Decision Queue ({finalDecisionQueue.length})
+              Ready for Final Decision ({readyForFinalQueue.length})
             </button>
             <button
               className={`consultant-tab-btn ${activeQueue === 'committee' ? 'consultant-tab-btn--active' : ''}`}
               onClick={() => setActiveQueue('committee')}
             >
-              In Committee Review ({reviewTeamQueue.length})
+              With Review Committee ({inCommitteeQueue.length})
             </button>
             <button
               className={`consultant-tab-btn ${activeQueue === 'all' ? 'consultant-tab-btn--active' : ''}`}
               onClick={() => setActiveQueue('all')}
             >
-              All Applications ({patents.length})
+              Decided ({completedList.length})
             </button>
           </div>
         </div>
 
         {loading ? (
-          <Loader message="Loading assigned patents..." />
+          <Loader message="Loading applications..." />
         ) : displayedPatents.length === 0 ? (
           <div className="consultant-dashboard__empty">
-            <p>No applications found in this queue.</p>
+            <p>No applications currently in this queue.</p>
           </div>
         ) : (
           <div className="consultant-dashboard__table-wrapper">
@@ -272,12 +273,12 @@ function ConsultantDashboard() {
                   <th>Applicant</th>
                   <th>Department</th>
                   <th>Status</th>
-                  <th>Workflow Action</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {displayedPatents.map((p) => {
-                  const isReadyForEvaluation = [
+                  const isPendingReview = [
                     PATENT_STATUS.SUBMITTED,
                     PATENT_STATUS.UNDER_CONSULTANT_REVIEW,
                     PATENT_STATUS.FORWARDED_TO_CONSULTANT,
@@ -308,25 +309,25 @@ function ConsultantDashboard() {
                         </span>
                       </td>
                       <td className="consultant-dashboard__cell consultant-actions-cell">
-                        {/* Stage 1 Action */}
-                        {isReadyForEvaluation && (
+                        {/* Stage 1: Forward to Review Team */}
+                        {isPendingReview && (
                           <Button
                             variant="primary"
                             size="small"
-                            onClick={() => handleOpenEvaluation(p)}
+                            onClick={() => handleOpenForward(p)}
                           >
-                            Evaluate & Forward →
+                            Forward to Review Team →
                           </Button>
                         )}
 
-                        {/* Stage 2 Actions */}
+                        {/* Stage 2: Final Decision */}
                         {isReadyForFinal && (
                           <div className="consultant-actions-group">
                             <button
                               className="consultant-btn consultant-btn--approve"
                               onClick={() => handleOpenDecision(p, 'approved')}
                             >
-                              ✓ Final Approve
+                              ✓ Approve
                             </button>
                             <button
                               className="consultant-btn consultant-btn--reject"
@@ -337,12 +338,12 @@ function ConsultantDashboard() {
                           </div>
                         )}
 
-                        {/* General View Button */}
+                        {/* View Details */}
                         <button
                           className="consultant-btn consultant-btn--view"
                           onClick={() => navigate(`/patents/${p.id}`)}
                         >
-                          Details
+                          View Details
                         </button>
                       </td>
                     </tr>
@@ -354,43 +355,45 @@ function ConsultantDashboard() {
         )}
       </div>
 
-      {/* EVALUATION MODAL (STAGE 1) */}
-      {evalModalOpen && selectedPatent && (
+      {/* FORWARD TO REVIEW TEAM MODAL */}
+      {forwardModalOpen && selectedPatent && (
         <Modal
-          title={`Consultant Evaluation: ${selectedPatent.patent_id}`}
-          onClose={() => !processingAction && setEvalModalOpen(false)}
+          title={`Forward to Review Team: ${selectedPatent.patent_id || selectedPatent.title}`}
+          onClose={() => !processingAction && setForwardModalOpen(false)}
         >
-          <form onSubmit={handleSubmitEvaluation} className="consultant-modal-form">
+          <form onSubmit={handleConfirmForward} className="consultant-modal-form">
             <div className="consultant-modal-summary">
-              <strong>Title:</strong> {selectedPatent.title}
+              <strong>Application:</strong> {selectedPatent.title}
               <br />
               <strong>Department:</strong> {selectedPatent.department_detail?.name || '-'}
             </div>
 
             <div className="consultant-modal-field">
               <label className="consultant-modal-label">
-                Mandatory Consultant Evaluation Report (PDF) *
+                Consultant Evaluation Report (PDF)
+                <span style={{ marginLeft: '6px', fontSize: '0.8rem', color: '#64748b' }}>
+                  (Optional)
+                </span>
               </label>
               <input
                 type="file"
                 accept=".pdf,application/pdf"
                 className="consultant-file-input"
                 onChange={(e) => setEvalFile(e.target.files[0])}
-                required
               />
               <span className="consultant-modal-help">
-                Upload your technical novelty evaluation findings (PDF required to proceed to Review Team).
+                Optionally attach your technical evaluation notes or findings for the committee.
               </span>
             </div>
 
             <div className="consultant-modal-field">
-              <label className="consultant-modal-label">Evaluation Remarks / Feedback</label>
+              <label className="consultant-modal-label">Review Notes / Remarks</label>
               <textarea
                 className="consultant-textarea"
-                rows="4"
-                placeholder="Key prior art notes, technical feasibility, and novelty assessment..."
-                value={evalNote}
-                onChange={(e) => setEvalNote(e.target.value)}
+                rows="3"
+                placeholder="Initial remarks or guidelines for the review committee..."
+                value={forwardNote}
+                onChange={(e) => setForwardNote(e.target.value)}
               />
             </div>
 
@@ -398,7 +401,7 @@ function ConsultantDashboard() {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => setEvalModalOpen(false)}
+                onClick={() => setForwardModalOpen(false)}
                 disabled={processingAction}
               >
                 Cancel
@@ -409,26 +412,26 @@ function ConsultantDashboard() {
                 loading={processingAction}
                 disabled={processingAction}
               >
-                Upload & Forward to Review Team →
+                Confirm & Forward to Review Team →
               </Button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* FINAL DECISION MODAL (STAGE 2) */}
+      {/* FINAL DECISION MODAL */}
       {decisionModalOpen && selectedPatent && (
         <Modal
-          title={`Final Decision: ${decisionType === 'approved' ? 'Approve' : 'Reject'} Patent Application`}
+          title={`Final Decision: ${decisionType === 'approved' ? 'Approve' : 'Reject'} Patent`}
           onClose={() => !processingAction && setDecisionModalOpen(false)}
         >
           <form onSubmit={handleExecuteDecision} className="consultant-modal-form">
             <div className="consultant-modal-summary">
               <strong>Application:</strong> {selectedPatent.patent_id} - {selectedPatent.title}
-              <p style={{ marginTop: '8px', color: decisionType === 'approved' ? '#059669' : '#dc2626' }}>
+              <p style={{ marginTop: '8px', color: decisionType === 'approved' ? '#059669' : '#dc2626', fontWeight: '600' }}>
                 {decisionType === 'approved'
-                  ? 'This application will be marked as APPROVED and cleared for formal patent filing.'
-                  : 'This application will be marked as REJECTED with your concluding remarks.'}
+                  ? 'Application will be marked as APPROVED and cleared for formal patent filing.'
+                  : 'Application will be marked as REJECTED.'}
               </p>
             </div>
 
@@ -436,8 +439,8 @@ function ConsultantDashboard() {
               <label className="consultant-modal-label">Final Remarks</label>
               <textarea
                 className="consultant-textarea"
-                rows="4"
-                placeholder="Concurrence with Review Committee, legal filing recommendations..."
+                rows="3"
+                placeholder="Concurrence with Review Committee, legal filing notes..."
                 value={decisionNote}
                 onChange={(e) => setDecisionNote(e.target.value)}
               />
