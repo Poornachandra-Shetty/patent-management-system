@@ -12,8 +12,8 @@ function Navbar({ isLoggedIn = false, userName = '', user, onLogout }) {
   const getRoleLabel = () => {
     if (!user) return ''
     if (user.role === 'admin') return 'Admin'
-    if (user.role === 'scrutinizer') return 'Scrutinizer'
     if (user.role === 'consultant') return 'Consultant'
+    if (user.role === 'review_team' || user.role === 'scrutinizer') return 'Review Committee'
 
     // For applicant role, distinguish between student and faculty
     const id = user.usn_or_emp_id || ''
@@ -33,6 +33,8 @@ function Navbar({ isLoggedIn = false, userName = '', user, onLogout }) {
             className="navbar__brand-logo"
           />
           <div className="navbar__brand-copy">
+            <span className="navbar__brand-primary">SJEC IP Cell</span>
+            <span className="navbar__brand-secondary">Patent Portal</span>
           </div>
         </Link>
 
