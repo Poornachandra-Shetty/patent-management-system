@@ -171,6 +171,25 @@ def transition_patent(
         note=note,
     )
 
+    # Also persist note as a Remark so it appears in the Review Remarks section across all roles
+    if note and note.strip():
+        try:
+            from apps.reviews.models import Remark, RemarkAction
+            action_map = {
+                S.APPROVED: RemarkAction.APPROVED,
+                S.REJECTED: RemarkAction.REJECTED,
+                S.UNDER_REVIEW_TEAM: RemarkAction.FORWARDED,
+            }
+            Remark.objects.create(
+                application=locked_patent,
+                user=performed_by,
+                text=note.strip(),
+                action=action_map.get(to_status, RemarkAction.COMMENT),
+                visible_to_applicant=True,
+            )
+        except Exception:
+            pass
+
     # Create notifications for status change
     _create_status_change_notifications(
         patent=locked_patent,

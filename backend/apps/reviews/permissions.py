@@ -22,9 +22,7 @@ class CanAccessRemark(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             if role == 'applicant':
                 return obj.visible_to_applicant and obj.application.applicant_id == user.pk
-            if role == 'consultant':
-                return obj.application.assigned_to_id == user.pk or obj.user_id == user.pk
-            if role == 'scrutinizer':
+            if role in ('consultant', 'review_team', 'scrutinizer'):
                 return obj.application.status != PatentApplicationStatus.DRAFT
             return False
 

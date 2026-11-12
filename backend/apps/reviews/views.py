@@ -32,9 +32,9 @@ class RemarkViewSet(viewsets.ModelViewSet):
                 action=RemarkAction.COMMENT,
                 visible_to_applicant=True
             )
-        elif role == 'consultant':
-            if application.assigned_to_id != user.pk and role != 'admin':
-                raise PermissionDenied("You are not assigned to evaluate this patent application.")
+        elif role in ('consultant', 'review_team'):
+            if application.status == PatentApplicationStatus.DRAFT:
+                raise PermissionDenied("Cannot add remarks to draft applications.")
             remark = serializer.save(user=user)
         else:
             remark = serializer.save(user=user)
@@ -68,9 +68,7 @@ class RemarkViewSet(viewsets.ModelViewSet):
             return queryset
         elif role == 'applicant':
             return queryset.filter(visible_to_applicant=True, application__applicant=user)
-        elif role == 'consultant':
-            return queryset.filter(Q(application__assigned_to=user) | Q(user=user))
-        elif role == 'scrutinizer':
+        elif role in ('consultant', 'review_team', 'scrutinizer'):
             return queryset.exclude(application__status=PatentApplicationStatus.DRAFT)
 
         return queryset.none()
