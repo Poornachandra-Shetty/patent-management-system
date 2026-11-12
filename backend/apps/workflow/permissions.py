@@ -36,9 +36,9 @@ def can_act_on_patent(user: AbstractBaseUser, patent: PatentApplication) -> bool
     if role in ('scrutinizer', 'review_team'):
         return patent.status in (S.SUBMITTED, S.UNDER_REVIEW_TEAM, S.UNDER_SCRUTINY)
     if role == 'consultant':
-        # Any active consultant can evaluate unassigned or assigned submissions
+        # Any active consultant can evaluate submissions in their queue
         if patent.status in (S.SUBMITTED, S.UNDER_CONSULTANT_REVIEW, S.PENDING_FINAL_APPROVAL):
-            return patent.assigned_to_id is None or patent.assigned_to_id == user.pk
+            return True
         # Legacy forwarded evaluations require being the assigned consultant
         if patent.status == S.FORWARDED_TO_CONSULTANT:
             return patent.assigned_to_id == user.pk

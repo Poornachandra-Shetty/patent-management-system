@@ -5,7 +5,17 @@
 
 import './Modal.css'
 
-function Modal({ isOpen, title, children, onClose, onConfirm, confirmText = 'Confirm', cancelText = 'Cancel', isDanger = false }) {
+function Modal({
+  isOpen = true,
+  title,
+  children,
+  onClose,
+  onConfirm,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  isDanger = false,
+  showFooter = false,
+}) {
   if (!isOpen) return null
 
   const handleBackdropClick = (e) => {
@@ -13,6 +23,8 @@ function Modal({ isOpen, title, children, onClose, onConfirm, confirmText = 'Con
       onClose?.()
     }
   }
+
+  const shouldRenderFooter = showFooter || Boolean(onConfirm)
 
   return (
     <div className="modal-overlay" onClick={handleBackdropClick}>
@@ -24,19 +36,21 @@ function Modal({ isOpen, title, children, onClose, onConfirm, confirmText = 'Con
           </button>
         </div>
         <div className="modal__body">{children}</div>
-        <div className="modal__footer">
-          <button className="modal__button modal__button--cancel" onClick={onClose}>
-            {cancelText}
-          </button>
-          {onConfirm && (
-            <button
-              className={`modal__button modal__button--confirm ${isDanger ? 'modal__button--danger' : ''}`}
-              onClick={onConfirm}
-            >
-              {confirmText}
+        {shouldRenderFooter && (
+          <div className="modal__footer">
+            <button className="modal__button modal__button--cancel" onClick={onClose}>
+              {cancelText}
             </button>
-          )}
-        </div>
+            {onConfirm && (
+              <button
+                className={`modal__button modal__button--confirm ${isDanger ? 'modal__button--danger' : ''}`}
+                onClick={onConfirm}
+              >
+                {confirmText}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

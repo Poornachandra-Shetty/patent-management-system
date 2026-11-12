@@ -23,6 +23,13 @@ def _workflow_error_response(exc: WorkflowError) -> Response:
     return Response({'detail': str(exc)}, status=http_status_for(exc))
 
 
+def get_patent_by_id_or_pk(patent_id: str) -> PatentApplication:
+    """Support resolving a patent by either integer primary key or alphanumeric patent_id."""
+    if str(patent_id).isdigit():
+        return get_object_or_404(PatentApplication, pk=int(patent_id))
+    return get_object_or_404(PatentApplication, patent_id=patent_id)
+
+
 class TransitionView(APIView):
     """
     POST /api/v1/workflow/{patent_id}/transition/
@@ -43,7 +50,7 @@ class TransitionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request: Request, patent_id: str) -> Response:
-        patent = get_object_or_404(PatentApplication, patent_id=patent_id)
+        patent = get_patent_by_id_or_pk(patent_id)
         user = cast(AbstractBaseUser, request.user)
 
         serializer = TransitionRequestSerializer(data=request.data)
@@ -73,7 +80,7 @@ class AllowedTransitionsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request: Request, patent_id: str) -> Response:
-        patent = get_object_or_404(PatentApplication, patent_id=patent_id)
+        patent = get_patent_by_id_or_pk(patent_id)
         user = cast(AbstractBaseUser, request.user)
 
         if not can_view_patent(user, patent):
@@ -109,7 +116,7 @@ class WorkflowHistoryView(generics.ListAPIView):
 
     def get_queryset(self):
         patent_id = self.kwargs['patent_id']
-        patent = get_object_or_404(PatentApplication, patent_id=patent_id)
+        patent = get_patent_by_id_or_pk(patent_id)
         user = cast(AbstractBaseUser, self.request.user)
 
         if not can_view_patent(user, patent):
@@ -121,7 +128,7 @@ class WorkflowHistoryView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         patent_id = self.kwargs['patent_id']
-        patent = get_object_or_404(PatentApplication, patent_id=patent_id)
+        patent = get_patent_by_id_or_pk(patent_id)
         user = cast(AbstractBaseUser, request.user)
 
         if not can_view_patent(user, patent):

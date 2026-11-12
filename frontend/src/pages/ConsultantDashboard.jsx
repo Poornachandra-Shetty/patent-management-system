@@ -103,7 +103,8 @@ function ConsultantDashboard() {
       }
 
       // 2. Transition patent status to UNDER_REVIEW_TEAM
-      const transitionRes = await adminService.transitionPatent(selectedPatent.patent_id, {
+      const patentIdentifier = selectedPatent.patent_id || selectedPatent.id
+      const transitionRes = await adminService.transitionPatent(patentIdentifier, {
         to_status: PATENT_STATUS.UNDER_REVIEW_TEAM,
         note: forwardNote || 'Consultant reviewed submission and forwarded to Review Team committee.',
       })
@@ -111,6 +112,9 @@ function ConsultantDashboard() {
       if (transitionRes.success) {
         showToast('Application forwarded to Review Team committee successfully.', 'success')
         setForwardModalOpen(false)
+        setSelectedPatent(null)
+        setEvalFile(null)
+        setForwardNote('')
         fetchConsultantPatents()
       } else {
         showToast(transitionRes.error || 'Failed to forward to review team.', 'error')
@@ -142,7 +146,8 @@ function ConsultantDashboard() {
         ? 'Application granted final approval for formal patent filing.'
         : 'Application rejected following final consultant review.'
 
-      const transitionRes = await adminService.transitionPatent(selectedPatent.patent_id, {
+      const patentIdentifier = selectedPatent.patent_id || selectedPatent.id
+      const transitionRes = await adminService.transitionPatent(patentIdentifier, {
         to_status: targetStatus,
         note: decisionNote || defaultNote,
       })
@@ -150,6 +155,8 @@ function ConsultantDashboard() {
       if (transitionRes.success) {
         showToast(`Patent marked as ${decisionType === 'approved' ? 'Approved' : 'Rejected'}!`, 'success')
         setDecisionModalOpen(false)
+        setSelectedPatent(null)
+        setDecisionNote('')
         fetchConsultantPatents()
       } else {
         showToast(transitionRes.error || 'Failed to record decision.', 'error')
@@ -358,6 +365,7 @@ function ConsultantDashboard() {
       {/* FORWARD TO REVIEW TEAM MODAL */}
       {forwardModalOpen && selectedPatent && (
         <Modal
+          isOpen={forwardModalOpen}
           title={`Forward to Review Team: ${selectedPatent.patent_id || selectedPatent.title}`}
           onClose={() => !processingAction && setForwardModalOpen(false)}
         >
@@ -422,6 +430,7 @@ function ConsultantDashboard() {
       {/* FINAL DECISION MODAL */}
       {decisionModalOpen && selectedPatent && (
         <Modal
+          isOpen={decisionModalOpen}
           title={`Final Decision: ${decisionType === 'approved' ? 'Approve' : 'Reject'} Patent`}
           onClose={() => !processingAction && setDecisionModalOpen(false)}
         >

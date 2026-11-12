@@ -66,11 +66,26 @@ export default api
  * @returns {string} - User-friendly error message
  */
 export const getErrorMessage = (error) => {
+  if (error.response?.data?.detail) {
+    return error.response.data.detail
+  }
   if (error.response?.data?.message) {
     return error.response.data.message
   }
   if (error.response?.data?.error) {
     return error.response.data.error
+  }
+  if (error.response?.data && typeof error.response.data === 'object') {
+    const entries = Object.entries(error.response.data)
+    if (entries.length > 0) {
+      const [field, val] = entries[0]
+      if (Array.isArray(val) && val.length > 0) {
+        return `${field}: ${val[0]}`
+      }
+      if (typeof val === 'string') {
+        return `${field}: ${val}`
+      }
+    }
   }
   if (error.message) {
     return error.message

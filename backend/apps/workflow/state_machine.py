@@ -55,6 +55,7 @@ TRANSITIONS: dict[str, dict[str, list[str]]] = {
         S.REJECTED:                ['scrutinizer', 'review_team', 'admin'],
     },
     S.FORWARDED_TO_CONSULTANT: {
+        S.UNDER_REVIEW_TEAM:       ['consultant', 'admin'],
         S.APPROVED:                ['consultant', 'admin'],
         S.REJECTED:                ['consultant', 'admin'],
     },
