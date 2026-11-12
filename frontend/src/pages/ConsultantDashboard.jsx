@@ -334,13 +334,13 @@ function ConsultantDashboard() {
                               className="consultant-btn consultant-btn--approve"
                               onClick={() => handleOpenDecision(p, 'approved')}
                             >
-                              ✓ Approve
+                              Approve
                             </button>
                             <button
                               className="consultant-btn consultant-btn--reject"
                               onClick={() => handleOpenDecision(p, 'rejected')}
                             >
-                              ✕ Reject
+                              Reject
                             </button>
                           </div>
                         )}

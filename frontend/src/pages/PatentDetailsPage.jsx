@@ -198,8 +198,8 @@ function PatentDetailsPage() {
             <div>
               <p style={{ margin: '0 0 4px', fontWeight: '700', color: hasApplicantReport ? '#15803d' : '#a16207' }}>
                 {hasApplicantReport
-                  ? '✓ Technical Report Attached — Ready for Submission'
-                  : '⚠️ Action Required: Technical Report (PDF) Missing'}
+                  ? 'Technical Report Attached — Ready for Submission'
+                  : 'Action Required: Technical Report (PDF) Missing'}
               </p>
               <p style={{ margin: 0, fontSize: '0.85rem', color: hasApplicantReport ? '#166534' : '#854d0e' }}>
                 {hasApplicantReport

@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FileText, X } from 'lucide-react'
 import { Button, Input, Card } from '../common'
 import { PATENT_CATEGORIES } from '../../utils/constants'
 import api, { getErrorMessage } from '../../services/api'
@@ -419,7 +420,7 @@ function PatentForm() {
             />
             {reportFile ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '1.4rem' }}>📄</span>
+                <FileText size={22} color="#059669" />
                 <div style={{ textAlign: 'left' }}>
                   <p style={{ margin: 0, fontWeight: '600', color: '#047857' }}>{reportFile.name}</p>
                   <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
@@ -434,12 +435,13 @@ function PatentForm() {
                     border: 'none',
                     color: '#ef4444',
                     cursor: 'pointer',
-                    fontSize: '1.2rem',
+                    display: 'flex',
+                    alignItems: 'center',
                     marginLeft: '8px'
                   }}
                   title="Remove file"
                 >
-                  ✕
+                  <X size={16} />
                 </button>
               </div>
             ) : (

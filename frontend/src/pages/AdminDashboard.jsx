@@ -139,13 +139,13 @@ function AdminDashboard() {
             className={`admin-dashboard__tab-btn ${activeTab === 'patents' ? 'admin-dashboard__tab-btn--active' : ''}`}
             onClick={() => setActiveTab('patents')}
           >
-            📁 Patent Applications
+            Patent Applications
           </button>
           <button
             className={`admin-dashboard__tab-btn ${activeTab === 'committee' ? 'admin-dashboard__tab-btn--active' : ''}`}
             onClick={() => setActiveTab('committee')}
           >
-            👥 Review Committee ({committeeMembers.length})
+            Review Committee ({committeeMembers.length})
           </button>
         </div>
       </div>

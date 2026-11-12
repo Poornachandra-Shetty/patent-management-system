@@ -134,7 +134,7 @@ function DocumentsPage() {
         {!canUpload && (
           <Card className="documents-page__info" padding="medium">
             <p>
-              ⚠️ Documents can only be uploaded for draft applications. 
+              Documents can only be uploaded for draft applications. 
               This application is currently <strong>{patent.status}</strong>.
             </p>
           </Card>

@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import { MessageSquare } from 'lucide-react'
 import { Card, Button } from '../common'
 import { getRemarks } from '../../services/reviewService'
 import './RemarksList.css'
@@ -79,7 +80,9 @@ function RemarksList({ applicationId }) {
     return (
       <Card className="remarks-list remarks-list--empty" padding="large">
         <div className="remarks-list__empty">
-          <div className="remarks-list__empty-icon">💬</div>
+          <div className="remarks-list__empty-icon" style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+            <MessageSquare size={40} strokeWidth={1.5} color="#94a3b8" />
+          </div>
           <h3>No Remarks Yet</h3>
           <p>Remarks from reviewers will appear here once your application is reviewed.</p>
         </div>
