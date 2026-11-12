@@ -10,6 +10,9 @@ class InventorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventor
         fields = ['id', 'name', 'usn_or_emp_id', 'department', 'department_detail', 'is_primary_inventor']
+        extra_kwargs = {
+            'usn_or_emp_id': {'required': False, 'allow_blank': True, 'default': ''}
+        }
 
 
 class PatentApplicationListSerializer(serializers.ModelSerializer):

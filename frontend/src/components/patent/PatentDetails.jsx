@@ -90,9 +90,9 @@ function PatentDetails({ patent, onEdit, onSubmit, onUploadDocuments }) {
         <Card title="Inventor Details" className="patent-details__section">
           {inventors?.length ? (
             <div className="patent-details__text">
-              {inventors.map((inventor) => (
-                <p key={inventor.id || inventor.usn_or_emp_id}>
-                  {inventor.name} - {inventor.usn_or_emp_id}
+              {inventors.map((inventor, index) => (
+                <p key={inventor.id || index}>
+                  {inventor.name}{inventor.usn_or_emp_id ? ` — ${inventor.usn_or_emp_id}` : ''}
                 </p>
               ))}
             </div>

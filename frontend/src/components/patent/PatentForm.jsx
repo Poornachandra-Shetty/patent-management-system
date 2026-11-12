@@ -81,7 +81,7 @@ function PatentForm() {
     // Required field validation
     const requiredFields = [
       { key: 'title', label: 'Patent Title' },
-      { key: 'inventor_details', label: 'Inventor Details' },
+      { key: 'inventor_details', label: 'Inventor Names' },
       { key: 'department', label: 'Department' },
       { key: 'category', label: 'Category' },
       { key: 'abstract', label: 'Abstract' },
@@ -94,14 +94,6 @@ function PatentForm() {
     requiredFields.forEach(({ key, label }) => {
       if (!formData[key] || !formData[key].trim()) {
         newErrors[key] = `${label} is required`
-      }
-    })
-
-    formData.inventor_details.split(/\r?\n/).forEach((line) => {
-      if (!line.trim()) return
-      const inventorParts = line.split('|')
-      if (inventorParts.length !== 2 || !inventorParts[0].trim() || !inventorParts[1].trim()) {
-        newErrors.inventor_details = 'Enter each inventor as Name | USN/Employee ID, one per line'
       }
     })
     
@@ -139,7 +131,13 @@ function PatentForm() {
         .map((line) => line.trim())
         .filter(Boolean)
         .map((line, index) => {
-          const [name, usnOrEmpId] = line.split('|').map((value) => value.trim())
+          let name = line
+          let usnOrEmpId = ''
+          if (line.includes('|')) {
+            const parts = line.split('|').map((v) => v.trim())
+            name = parts[0]
+            usnOrEmpId = parts[1] || ''
+          }
           return {
             name,
             usn_or_emp_id: usnOrEmpId,
@@ -231,16 +229,16 @@ function PatentForm() {
         {/* Inventor Details */}
         <div className="form-group">
           <label className="form-group__label">
-            Inventor Details <span className="form-group__required">*</span>
+            Inventor / Author Names <span className="form-group__required">*</span>
           </label>
           <textarea
             name="inventor_details"
             className={`form-group__textarea ${errors.inventor_details ? 'form-group__textarea--error' : ''}`}
-            placeholder="Enter one inventor per line as Name | USN/Employee ID"
+            placeholder="Enter inventor names (one per line, e.g. Dr. Rajesh Rao, Rahul Sharma)"
             value={formData.inventor_details}
             onChange={handleChange}
             disabled={loading || loadingDepartments}
-            rows={4}
+            rows={3}
           />
           {errors.inventor_details && (
             <p className="form-group__error">{errors.inventor_details}</p>
