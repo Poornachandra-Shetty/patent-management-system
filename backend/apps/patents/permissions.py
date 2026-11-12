@@ -23,9 +23,7 @@ class IsPatentOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             if role == 'applicant':
                 return obj.applicant_id == user.pk
-            if role == 'consultant':
-                return obj.assigned_to_id == user.pk
-            if role == 'scrutinizer':
+            if role in ('consultant', 'scrutinizer', 'review_team'):
                 return obj.status != PatentApplicationStatus.DRAFT
             return False
 
