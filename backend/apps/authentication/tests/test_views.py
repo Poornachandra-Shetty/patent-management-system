@@ -115,7 +115,7 @@ def test_register_rejects_invalid_email_format(api_client, department, email):
 
 
 @pytest.mark.django_db
-def test_register_requires_usn_or_emp_id(api_client, department):
+def test_register_usn_or_emp_id_is_optional(api_client, department):
     payload = {
         'name': 'No USN',
         'email': 'nouser@sjec.ac.in',
@@ -126,8 +126,9 @@ def test_register_requires_usn_or_emp_id(api_client, department):
 
     response = api_client.post(reverse('auth_register'), payload, format='json')
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert 'usn_or_emp_id' in response.data
+    assert response.status_code == status.HTTP_201_CREATED
+    created_user = User.objects.get(email='nouser@sjec.ac.in')
+    assert created_user.usn_or_emp_id is None
 
 
 @pytest.mark.django_db

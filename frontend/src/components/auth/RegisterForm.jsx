@@ -75,10 +75,6 @@ function RegisterForm() {
       nextErrors.password = 'Password must be at least 6 characters'
     }
 
-    if (!formData.usn_or_emp_id.trim()) {
-      nextErrors.usn_or_emp_id = 'USN / Employee ID is required'
-    }
-
     if (!formData.mobile.trim()) {
       nextErrors.mobile = 'Mobile number is required'
     }
@@ -106,7 +102,7 @@ function RegisterForm() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        usn_or_emp_id: formData.usn_or_emp_id,
+        usn_or_emp_id: formData.usn_or_emp_id.trim() || null,
         mobile: formData.mobile,
         department: Number(formData.department),
       })
@@ -177,12 +173,11 @@ function RegisterForm() {
           <Input
             type="text"
             name="usn_or_emp_id"
-            label="USN / Employee ID"
-            placeholder="USN or Employee ID"
+            label="USN / Employee ID (Optional)"
+            placeholder="USN or Employee ID (optional)"
             value={formData.usn_or_emp_id}
             onChange={handleChange}
             error={errors.usn_or_emp_id}
-            required
             disabled={submitting || loadingDepartments}
           />
 

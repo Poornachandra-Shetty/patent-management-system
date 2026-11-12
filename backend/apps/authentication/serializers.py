@@ -63,6 +63,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             'id', 'name', 'usn_or_emp_id', 'email', 'mobile', 'department', 'password', 'role'
         ]
         read_only_fields = ['id']
+        extra_kwargs = {
+            'usn_or_emp_id': {'required': False, 'allow_null': True, 'allow_blank': True}
+        }
 
     def validate_email(self, value):
         if not isinstance(value, str) or not value.strip():
@@ -73,8 +76,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         # Public registration is strictly for applicants (students and faculty).
         # Review committee members are provisioned by Admin; Consultants are predefined.
         attrs['role'] = 'applicant'
-        if not attrs.get('usn_or_emp_id'):
-            raise serializers.ValidationError({'usn_or_emp_id': 'This field is required.'})
+        usn = attrs.get('usn_or_emp_id')
+        if not usn or not str(usn).strip():
+            attrs['usn_or_emp_id'] = None
+        else:
+            attrs['usn_or_emp_id'] = str(usn).strip()
         return attrs
 
     def create(self, validated_data):
