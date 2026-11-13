@@ -3,16 +3,13 @@ import { Bell, ChevronDown, FileText, LayoutGrid, Search, Settings, UserCircle2,
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { Navbar, ProtectedRoute } from './components/common'
-import { LoginPage, SignupPage, AboutPage, DashboardPage, NewPatentPage, PatentDetailsPage, DocumentsPage, AdminDashboard, AdminPatentDetail, SettingsPage } from './pages'
+import { LoginPage, SignupPage, AboutPage, DashboardPage, NewPatentPage, PatentDetailsPage, DocumentsPage, AdminDashboard, AdminPatentDetail, SettingsPage, ConsultantDashboard, ReviewTeamDashboard } from './pages'
 import { USER_ROLES } from './utils/constants'
 import './App.css'
 
 const sidebarItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutGrid },
-  { label: 'Patents', to: '/patents/new', icon: FileText },
-  { label: 'Reviews', to: '/admin/dashboard', icon: FileText },
-  { label: 'Workflow', to: '/dashboard', icon: Users },
-  { label: 'Notifications', to: '/dashboard', icon: Bell },
+  { label: 'New Application', to: '/patents/new', icon: FileText, roles: [USER_ROLES.APPLICANT] },
 ]
 
 function App() {
@@ -46,13 +43,15 @@ function AppContent() {
   }
 
   const userRole = user?.role
-  const isStaff = [USER_ROLES.ADMIN, USER_ROLES.SCRUTINIZER, USER_ROLES.CONSULTANT].includes(userRole)
+  const isStaff = [
+    USER_ROLES.ADMIN,
+    USER_ROLES.SCRUTINIZER,
+    USER_ROLES.CONSULTANT,
+    USER_ROLES.REVIEW_TEAM,
+  ].includes(userRole)
 
   const filteredSidebarItems = sidebarItems.filter((item) => {
-    // Hide "Patents" (which opens New Patent form) from reviewers/admins
-    if (item.label === 'Patents' && isStaff) return false
-    // Hide "Reviews" from applicants (student/faculty)
-    if (item.label === 'Reviews' && !isStaff) return false
+    if (item.roles && !item.roles.includes(userRole)) return false
     return true
   })
 
@@ -127,9 +126,27 @@ function AppContent() {
             />
 
             <Route
+              path="/consultant/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.CONSULTANT, USER_ROLES.ADMIN]}>
+                  <ConsultantDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/review-team/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.REVIEW_TEAM, USER_ROLES.SCRUTINIZER, USER_ROLES.ADMIN]}>
+                  <ReviewTeamDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/admin/dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
                   <AdminDashboard />
                 </ProtectedRoute>
               }
@@ -231,12 +248,17 @@ function PlaceholderPage({ title, subtitle }) {
 
 function DashboardRouter() {
   const { user } = useAuth()
+  const role = user?.role
 
-  const isAdmin = user?.role === USER_ROLES.ADMIN
-  const isScrutinizer = user?.role === USER_ROLES.SCRUTINIZER
-  const isConsultant = user?.role === USER_ROLES.CONSULTANT
+  if (role === USER_ROLES.CONSULTANT) {
+    return <ConsultantDashboard />
+  }
 
-  if (isAdmin || isScrutinizer || isConsultant) {
+  if (role === USER_ROLES.REVIEW_TEAM || role === USER_ROLES.SCRUTINIZER) {
+    return <ReviewTeamDashboard />
+  }
+
+  if (role === USER_ROLES.ADMIN) {
     return <AdminDashboard />
   }
 

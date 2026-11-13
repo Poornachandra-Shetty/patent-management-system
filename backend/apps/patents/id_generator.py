@@ -17,16 +17,22 @@ def generate_patent_id(department):
     """
     Generates a unique atomic Patent ID like PAT-2026-CSE-001.
     Uses select_for_update() to prevent race conditions during concurrent submissions.
+    Automatically increments past any existing patent IDs to prevent collision.
     """
+    from apps.patents.models import PatentApplication
+
     current_year = timezone.now().year
     with transaction.atomic():
-        counter, created = PatentIDCounter.objects.select_for_update().get_or_create(
+        counter, _ = PatentIDCounter.objects.select_for_update().get_or_create(
             department=department,
             year=current_year,
             defaults={'last_sequence': 0}
         )
-        counter.last_sequence += 1
-        counter.save()
         
-        sequence_str = str(counter.last_sequence).zfill(3)
-        return f"PAT-{current_year}-{department.code.upper()}-{sequence_str}"
+        while True:
+            counter.last_sequence += 1
+            sequence_str = str(counter.last_sequence).zfill(3)
+            candidate_id = f"PAT-{current_year}-{department.code.upper()}-{sequence_str}"
+            if not PatentApplication.objects.filter(patent_id=candidate_id).exists():
+                counter.save()
+                return candidate_id

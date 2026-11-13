@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -41,22 +42,24 @@ class PatentApplicationViewSet(viewsets.ModelViewSet):
         elif role == 'applicant':
             return queryset.filter(applicant=user)
         elif role == 'consultant':
-            from django.db.models import Q
-            return queryset.filter(
-                Q(assigned_to=user) |
-                Q(
-                    assigned_to__isnull=True,
-                    status__in=[
-                        PatentApplicationStatus.SUBMITTED,
-                        PatentApplicationStatus.UNDER_CONSULTANT_REVIEW,
-                        PatentApplicationStatus.PENDING_FINAL_APPROVAL,
-                        PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
-                    ]
-                )
-            )
+            return queryset.exclude(status=PatentApplicationStatus.DRAFT)
         elif role in ('scrutinizer', 'review_team'):
             return queryset.exclude(status=PatentApplicationStatus.DRAFT)
         return queryset.none()
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs[lookup_url_kwarg]
+
+        # Support both integer primary key and alphanumeric patent_id
+        if str(lookup_value).isdigit():
+            obj = get_object_or_404(queryset, pk=lookup_value)
+        else:
+            obj = get_object_or_404(queryset, patent_id=lookup_value)
+
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def perform_update(self, serializer):
         instance = self.get_object()

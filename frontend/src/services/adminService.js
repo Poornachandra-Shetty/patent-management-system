@@ -179,6 +179,47 @@ export async function getDepartments() {
   }
 }
 
+/**
+ * Create a new review committee member (Admin only)
+ * @param {object} userData - Member details
+ * @returns {Promise<{success: boolean, data?: object, error?: string}>}
+ */
+export async function createCommitteeMember(userData) {
+  try {
+    const payload = {
+      ...userData,
+      role: 'review_team',
+    }
+    const response = await api.post('/auth/users/', payload)
+    return {
+      success: true,
+      data: response.data,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: getErrorMessage(error),
+    }
+  }
+}
+
+/**
+ * Delete a user (Admin only)
+ * @param {number|string} userId - User ID
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function deleteUser(userId) {
+  try {
+    await api.delete(`/auth/users/${userId}/`)
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: getErrorMessage(error),
+    }
+  }
+}
+
 export default {
   getPatents,
   getPatentDetail,
@@ -188,4 +229,6 @@ export default {
   createReview,
   getUsersByRole,
   getDepartments,
+  createCommitteeMember,
+  deleteUser,
 }

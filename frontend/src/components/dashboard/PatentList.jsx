@@ -3,6 +3,7 @@
  * Displays a list of patent cards with loading and empty states
  */
 
+import { AlertCircle } from 'lucide-react'
 import PatentCard from './PatentCard'
 import { Card, Button } from '../common'
 import { Link } from 'react-router-dom'
@@ -31,7 +32,9 @@ function PatentList({
     return (
       <Card className="patent-list patent-list--error" padding="large">
         <div className="patent-list__error">
-          <div className="patent-list__error-icon">⚠️</div>
+          <div className="patent-list__error-icon" style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+            <AlertCircle size={40} strokeWidth={1.5} color="#dc2626" />
+          </div>
           <h3 className="patent-list__error-title">Failed to Load Patents</h3>
           <p className="patent-list__error-text">{error}</p>
           {onRetry && (

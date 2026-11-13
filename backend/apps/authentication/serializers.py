@@ -43,12 +43,6 @@ class SJECTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'email'
 
     def validate(self, attrs):
-        email = attrs.get(self.username_field)
-        if not isinstance(email, str) or not email.endswith('@sjec.ac.in'):
-            raise serializers.ValidationError({
-                'email': 'Only email addresses ending with @sjec.ac.in may log in.'
-            })
-
         data = cast(dict[str, Any], super().validate(attrs))
         data['user'] = UserSerializer(self.user).data
         return data
@@ -69,20 +63,28 @@ class RegisterSerializer(serializers.ModelSerializer):
             'id', 'name', 'usn_or_emp_id', 'email', 'mobile', 'department', 'password', 'role'
         ]
         read_only_fields = ['id']
+        extra_kwargs = {
+            'usn_or_emp_id': {'required': False, 'allow_null': True, 'allow_blank': True}
+        }
 
     def validate_email(self, value):
-        if not isinstance(value, str) or not value.endswith('@sjec.ac.in'):
-            raise serializers.ValidationError('Only email addresses ending with @sjec.ac.in may register.')
-        return value
+        if not isinstance(value, str) or not value.strip():
+            raise serializers.ValidationError('A valid email address is required.')
+        return value.lower().strip()
 
     def validate(self, attrs):
-        attrs.pop('role', None)
-        if not attrs.get('usn_or_emp_id'):
-            raise serializers.ValidationError({'usn_or_emp_id': 'This field is required.'})
+        # Public registration is strictly for applicants (students and faculty).
+        # Review committee members are provisioned by Admin; Consultants are predefined.
+        attrs['role'] = 'applicant'
+        usn = attrs.get('usn_or_emp_id')
+        if not usn or not str(usn).strip():
+            attrs['usn_or_emp_id'] = None
+        else:
+            attrs['usn_or_emp_id'] = str(usn).strip()
         return attrs
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        validated_data.pop('role', None)
-        user = User.objects.create_user(password=password, role='applicant', **validated_data)
+        role = validated_data.pop('role', 'applicant')
+        user = User.objects.create_user(password=password, role=role, **validated_data)
         return user

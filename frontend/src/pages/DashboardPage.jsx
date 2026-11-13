@@ -1,6 +1,6 @@
 /**
  * DashboardPage
- * Main dashboard for applicants to view and manage their patents
+ * Main dashboard for applicants to view and manage their patent applications
  */
 
 import { useState, useEffect } from 'react'
@@ -37,17 +37,12 @@ function DashboardPage() {
     const result = await getMyPatents()
     
     if (result.success) {
-      // Handle API response structure
-      // DRF pagination: { count, results: [] }
-      // or legacy: { patents: [] }
-      // or raw array: []
       const responseData = result.data
       const patentList = responseData.results || responseData.patents || (Array.isArray(responseData) ? responseData : [])
       const responseStats = responseData.stats || null
 
       setPatents(patentList)
 
-      // Calculate stats from patents if not provided by API
       if (responseStats) {
         setStats(responseStats)
       } else if (Array.isArray(patentList)) {
@@ -55,7 +50,14 @@ function DashboardPage() {
           total: responseData.count ?? patentList.length,
           drafts: patentList.filter(p => p.status === 'draft').length,
           under_review: patentList.filter(p =>
-            ['submitted', 'under_scrutiny', 'forwarded_to_consultant'].includes(p.status)
+            [
+              'submitted',
+              'under_consultant_review',
+              'under_review_team',
+              'pending_final_approval',
+              'under_scrutiny',
+              'forwarded_to_consultant',
+            ].includes(p.status)
           ).length,
           approved: patentList.filter(p => p.status === 'approved').length,
         }
@@ -75,16 +77,16 @@ function DashboardPage() {
         <div className="dashboard__header">
           <div className="dashboard__greeting">
             <h1 className="dashboard__title">
-              Welcome, {user?.name || 'Applicant'}
+              Applicant Portal
             </h1>
             <p className="dashboard__subtitle">
-              Manage your patent applications and track their status
+              Welcome back, <strong>{user?.name || 'Applicant'}</strong> • {user?.department_detail?.name || 'Academic Department'}
             </p>
           </div>
           <div className="dashboard__actions">
             <Link to="/patents/new">
               <Button variant="primary" size="large">
-                + New Patent Application
+                + File New Patent Application
               </Button>
             </Link>
           </div>
@@ -98,22 +100,22 @@ function DashboardPage() {
           </Card>
           <Card className="stat-card">
             <div className="stat-card__number">{stats.drafts}</div>
-            <div className="stat-card__label">Drafts</div>
+            <div className="stat-card__label">In Draft</div>
           </Card>
           <Card className="stat-card">
             <div className="stat-card__number">{stats.under_review}</div>
-            <div className="stat-card__label">Under Review</div>
+            <div className="stat-card__label">Under Formal Review</div>
           </Card>
           <Card className="stat-card">
             <div className="stat-card__number">{stats.approved}</div>
-            <div className="stat-card__label">Approved</div>
+            <div className="stat-card__label">Approved for Filing</div>
           </Card>
         </div>
 
         {/* Patents List Section */}
         <section className="dashboard__patents">
           <div className="section-header">
-            <h2 className="section-header__title">My Patent Applications</h2>
+            <h2 className="section-header__title">My Applications</h2>
             {!loading && !error && patents.length > 0 && (
               <span className="section-header__count">
                 {patents.length} application{patents.length !== 1 ? 's' : ''}
@@ -127,30 +129,6 @@ function DashboardPage() {
             error={error}
             onRetry={fetchPatents}
           />
-        </section>
-
-        {/* Quick Links */}
-        <section className="dashboard__quick-links">
-          <Card title="Quick Links" subtitle="Helpful resources">
-            <div className="quick-links">
-              <a href="#" className="quick-link">
-                <span className="quick-link__icon">📄</span>
-                <span className="quick-link__text">SJEC Patent Policy</span>
-              </a>
-              <a href="#" className="quick-link">
-                <span className="quick-link__icon">📋</span>
-                <span className="quick-link__text">Patent Application Form</span>
-              </a>
-              <a href="#" className="quick-link">
-                <span className="quick-link__icon">🔒</span>
-                <span className="quick-link__text">NDA Template</span>
-              </a>
-              <a href="#" className="quick-link">
-                <span className="quick-link__icon">❓</span>
-                <span className="quick-link__text">FAQ</span>
-              </a>
-            </div>
-          </Card>
         </section>
       </Container>
     </div>

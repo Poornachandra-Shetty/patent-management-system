@@ -21,7 +21,7 @@ function SignupPage() {
 
           <div className="login-page__info">
             <p>
-              Registration is open only for valid SJEC staff and student accounts.
+              Open registration for students and faculty. External consultants and review committee members are provisioned by the IP Cell.
             </p>
           </div>
         </div>

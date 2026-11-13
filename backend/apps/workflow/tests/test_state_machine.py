@@ -28,7 +28,7 @@ class StateMachineTestCase(SimpleTestCase):
         cases = [
             (S.SUBMITTED, 'scrutinizer', {S.UNDER_SCRUTINY, S.REJECTED}),
             (S.UNDER_SCRUTINY, 'scrutinizer', {S.FORWARDED_TO_CONSULTANT, S.REJECTED}),
-            (S.FORWARDED_TO_CONSULTANT, 'consultant', {S.APPROVED, S.REJECTED}),
+            (S.FORWARDED_TO_CONSULTANT, 'consultant', {S.UNDER_REVIEW_TEAM, S.APPROVED, S.REJECTED}),
             # Revised workflow sequence cases
             (S.SUBMITTED, 'consultant', {S.UNDER_CONSULTANT_REVIEW, S.UNDER_REVIEW_TEAM, S.REJECTED}),
             (S.UNDER_CONSULTANT_REVIEW, 'consultant', {S.UNDER_REVIEW_TEAM, S.REJECTED}),

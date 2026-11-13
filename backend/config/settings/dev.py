@@ -5,6 +5,8 @@ from .base import *
 
 DEBUG = True
 
+ALLOWED_HOSTS = ['*']
+
 database_url = config('DATABASE_URL', default='')
 if database_url:
     DATABASES = {

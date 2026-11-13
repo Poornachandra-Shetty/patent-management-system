@@ -10,6 +10,9 @@ class InventorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventor
         fields = ['id', 'name', 'usn_or_emp_id', 'department', 'department_detail', 'is_primary_inventor']
+        extra_kwargs = {
+            'usn_or_emp_id': {'required': False, 'allow_blank': True, 'default': ''}
+        }
 
 
 class PatentApplicationListSerializer(serializers.ModelSerializer):
@@ -48,9 +51,9 @@ class PatentApplicationCreateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'patent_id', 'title', 'department', 'category', 'abstract',
             'keywords', 'problem_statement', 'novelty_description',
-            'proposed_application', 'inventors'
+            'proposed_application', 'inventors', 'status'
         ]
-        read_only_fields = ['id', 'patent_id']
+        read_only_fields = ['id', 'patent_id', 'status']
 
     def create(self, validated_data):
         inventors_data = validated_data.pop('inventors', [])

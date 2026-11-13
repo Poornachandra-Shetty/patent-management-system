@@ -109,10 +109,50 @@ patent-management-system/
 
 ## 👥 User Roles & Workflow
 
-1. **Applicant (Student / Faculty)**: Submits patent applications, uploads technical disclosures, tracks application status.
-2. **Scrutinizer (Internal IP Cell Reviewer)**: Conducts prior art search, reviews disclosure completeness, requests revisions or approves.
-3. **Consultant (Patent Attorney / External Expert)**: Evaluates technical novelty and recommends formal patent filing.
-4. **Admin (IP Cell Coordinator)**: Manages users, department codes, application assignments, and overall system metrics.
+The system implements a stage-gated document review workflow:
+
+```
+[Applicant] ──(1. Submits Patent + Mandatory PDF Report)──> [Consultant]
+                                                                │
+                                                                ▼
+                                                (2. Uploads Evaluation PDF)
+                                                                │
+                                                                ▼
+                                                        [Review Team]
+                                                                │
+                                                                ▼
+                                                (3. Meeting + Internal PDF)
+                                                                │
+                                                                ▼
+                                                        [Consultant]
+                                                                │
+                                                                ▼
+                                                (4. Final Approve / Reject)
+                                                                │
+                                                                ▼
+                                                        [Applicant] (Tracks)
+```
+
+1. **Applicant (Student / Faculty)**: Open registration with any email address. Submits patent details and mandatory Patent Report PDF. Tracks workflow status live.
+2. **Consultant (Predefined External Expert)**: Reviews applicant submission, uploads mandatory Consultant Evaluation Report PDF, and routes application to Review Team. Performs final Approval/Rejection after committee review.
+3. **Review Team / Committee**: Provisioned by Admin. Accesses consultant report, conducts internal review/meeting, uploads mandatory Internal Review Report PDF, and recommends approval or rejection.
+4. **Admin (IP Cell Coordinator)**: Manages the Review Committee roster (add/remove members), assigns applications, and oversees overall metrics.
+
+---
+
+## 🔑 Predefined Demo Accounts
+
+All demo accounts use password: `password123`
+
+| Role | Email | Description | Quick Login |
+|------|-------|-------------|-------------|
+| **Applicant** | `student@sjec.ac.in` | Student / Faculty Applicant | Click "Applicant" pill on login |
+| **Consultant 1** | `consultant@sjec.ac.in` | Advocate External Consultant | Click "Consultant 1" pill on login |
+| **Consultant 2** | `consultant2@sjec.ac.in` | Advocate Senior IP Consultant | Click "Consultant 2" pill on login |
+| **Review Team** | `reviewteam@sjec.ac.in` | Review Committee Member | Click "Review Team" pill on login |
+| **Admin** | `admin@sjec.ac.in` | IP Cell Administrative Head | Click "Admin" pill on login |
+
+> **Seed Database**: Run `python manage.py seed_data` to populate sample departments, users, and patent applications.
 
 ---
 

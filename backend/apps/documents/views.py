@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 
+from django.db.models import Q
 from apps.documents.models import Document, PublicDocument
 from apps.documents.serializers import DocumentSerializer, PublicDocumentSerializer
 from apps.documents.permissions import CanAccessDocument
@@ -32,18 +33,8 @@ class DocumentViewSet(viewsets.ModelViewSet):
             ).select_related('application', 'uploaded_by')
 
         if role == 'consultant':
-            from django.db.models import Q
             return Document.objects.filter(
-                Q(application__assigned_to=user) |
-                Q(
-                    application__assigned_to__isnull=True,
-                    application__status__in=[
-                        PatentApplicationStatus.SUBMITTED,
-                        PatentApplicationStatus.UNDER_CONSULTANT_REVIEW,
-                        PatentApplicationStatus.PENDING_FINAL_APPROVAL,
-                        PatentApplicationStatus.FORWARDED_TO_CONSULTANT,
-                    ]
-                )
+                Q(application__assigned_to=user) | ~Q(application__status=PatentApplicationStatus.DRAFT)
             ).select_related('application', 'uploaded_by')
 
         if role in ('scrutinizer', 'review_team'):

@@ -4,6 +4,7 @@
  */
 
 import { useState, useRef } from 'react'
+import { UploadCloud, FileText, X } from 'lucide-react'
 import { Button, Card } from '../common'
 import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS } from '../../utils/constants'
 import { uploadDocument, validateFile } from '../../services/documentService'
@@ -13,7 +14,13 @@ function DocumentUploader({
   applicationId, 
   onUploadSuccess,
   existingDocuments = [],
-  disabled = false 
+  disabled = false,
+  allowedDocTypes = [
+    DOCUMENT_TYPES.APPLICANT_PATENT_REPORT,
+    DOCUMENT_TYPES.SUPPORTING_DOCUMENTS,
+    DOCUMENT_TYPES.PATENT_FORM,
+    DOCUMENT_TYPES.NDA,
+  ]
 }) {
   const fileInputRef = useRef(null)
   
@@ -143,13 +150,13 @@ function DocumentUploader({
           disabled={disabled || uploading}
         >
           <option value="">Select document type</option>
-          {Object.entries(DOCUMENT_TYPE_LABELS).map(([type, label]) => (
+          {allowedDocTypes.map((type) => (
             <option 
               key={type} 
               value={type}
               disabled={isTypeUploaded(type)}
             >
-              {label} {isTypeUploaded(type) ? '(Already uploaded)' : ''}
+              {DOCUMENT_TYPE_LABELS[type] || type} {isTypeUploaded(type) ? '(Already uploaded)' : ''}
             </option>
           ))}
         </select>
@@ -174,7 +181,9 @@ function DocumentUploader({
         
         {selectedFile ? (
           <div className="document-uploader__selected">
-            <div className="document-uploader__file-icon">📄</div>
+            <div className="document-uploader__file-icon" style={{ display: 'flex', alignItems: 'center', color: '#059669' }}>
+              <FileText size={24} />
+            </div>
             <div className="document-uploader__file-info">
               <span className="document-uploader__file-name">{selectedFile.name}</span>
               <span className="document-uploader__file-size">
@@ -186,12 +195,14 @@ function DocumentUploader({
               onClick={(e) => { e.stopPropagation(); clearSelection(); }}
               type="button"
             >
-              ✕
+              <X size={16} />
             </button>
           </div>
         ) : (
           <div className="document-uploader__placeholder">
-            <div className="document-uploader__icon">📁</div>
+            <div className="document-uploader__icon" style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+              <UploadCloud size={40} strokeWidth={1.5} color="#94a3b8" />
+            </div>
             <p>Drag and drop a file here, or click to browse</p>
             <span className="document-uploader__hint">
               Accepted formats: PDF, DOCX, JPG/JPEG, PNG (max 10MB)

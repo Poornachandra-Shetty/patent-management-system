@@ -4,7 +4,109 @@
 }
 
 .admin-dashboard__header {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-dashboard__tabs {
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid var(--color-border, #e2e8f0);
+  padding-bottom: 4px;
+}
+
+.admin-dashboard__tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #64748b);
+  cursor: pointer;
+  transition: all 180ms ease;
+  margin-bottom: -6px;
+}
+
+.admin-dashboard__tab-btn:hover {
+  color: var(--color-text, #0f172a);
+}
+
+.admin-dashboard__tab-btn--active {
+  color: var(--color-primary, #1e3a8a);
+  border-bottom-color: var(--color-primary, #1e3a8a);
+}
+
+.admin-committee__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
+  background: var(--color-card, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  padding: 18px 24px;
+  border-radius: 14px;
+}
+
+.admin-committee__heading {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.admin-committee__subheading {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.admin-committee__role-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.admin-committee__delete-btn {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.admin-committee__delete-btn:hover {
+  background: #fecaca;
+}
+
+.admin-committee__modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 320px;
+}
+
+.admin-committee__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-committee__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .admin-dashboard__title {

@@ -65,7 +65,7 @@ class Inventor(models.Model):
         related_name='inventors'
     )
     name = models.CharField(max_length=150)
-    usn_or_emp_id = models.CharField(max_length=50)
+    usn_or_emp_id = models.CharField(max_length=50, blank=True, default='')
     department = models.ForeignKey(
         Department,
         on_delete=models.SET_NULL,

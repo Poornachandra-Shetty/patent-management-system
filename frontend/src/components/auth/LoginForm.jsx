@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { Button, Input, Card } from '../common'
+import { PREDEFINED_ACCOUNTS } from '../../utils/constants'
 import './LoginForm.css'
 
 function LoginForm() {
@@ -23,6 +24,16 @@ function LoginForm() {
   // Validation errors
   const [errors, setErrors] = useState({})
   
+  // Quick-fill demo account
+  const handleSelectDemoAccount = (account) => {
+    setFormData({
+      email: account.email,
+      password: account.password,
+    })
+    setErrors({})
+    if (error) clearError()
+  }
+
   // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -92,10 +103,27 @@ function LoginForm() {
   return (
     <Card className="login-form__card" padding="large">
       <div className="login-form__header">
-        <h2 className="login-form__title">Applicant Login</h2>
+        <h2 className="login-form__title">Portal Login</h2>
         <p className="login-form__subtitle">
-          Sign in to access your patent applications
+          Sign in to access your dashboard
         </p>
+      </div>
+
+      <div className="login-form__demo-bar">
+        <p className="login-form__demo-title">Quick Demo Login:</p>
+        <div className="login-form__demo-pills">
+          {PREDEFINED_ACCOUNTS.map((acc) => (
+            <button
+              key={acc.email}
+              type="button"
+              className={`login-form__demo-pill ${formData.email === acc.email ? 'login-form__demo-pill--active' : ''}`}
+              onClick={() => handleSelectDemoAccount(acc)}
+              title={`${acc.description} (${acc.email})`}
+            >
+              {acc.label}
+            </button>
+          ))}
+        </div>
       </div>
       
       <form onSubmit={handleSubmit} className="login-form" noValidate>

@@ -12,7 +12,7 @@ class UserRole(models.TextChoices):
 
 class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=150)
-    usn_or_emp_id = models.CharField(max_length=50, unique=True)
+    usn_or_emp_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
     email = models.EmailField(unique=True)
     mobile = models.CharField(max_length=15)
     role = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.APPLICANT)
@@ -25,7 +25,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name', 'usn_or_emp_id']
+    REQUIRED_FIELDS = ['name']
 
     def __str__(self):
-        return f"{self.name} ({self.usn_or_emp_id}) - {self.role}"
+        id_suffix = f" ({self.usn_or_emp_id})" if self.usn_or_emp_id else ""
+        return f"{self.name}{id_suffix} - {self.role}"

@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react'
+import { FileText, FolderOpen } from 'lucide-react'
 import { Card, Button } from '../common'
 import { DOCUMENT_TYPE_LABELS } from '../../utils/constants'
 import { deleteDocument } from '../../services/documentService'
@@ -48,20 +49,13 @@ function DocumentList({
     }
   }
 
-  // Get file icon based on type
-  const getFileIcon = (filename) => {
-    if (!filename) return '📄'
-    const ext = filename.split('.').pop()?.toLowerCase()
-    if (ext === 'pdf') return '📕'
-    if (ext === 'doc' || ext === 'docx') return '📘'
-    return '📄'
-  }
-
   if (documents.length === 0) {
     return (
       <Card className="document-list document-list--empty" padding="large">
         <div className="document-list__empty">
-          <div className="document-list__empty-icon">📁</div>
+          <div className="document-list__empty-icon" style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+            <FolderOpen size={40} strokeWidth={1.5} color="#94a3b8" />
+          </div>
           <p>No documents uploaded yet</p>
         </div>
       </Card>
@@ -75,8 +69,8 @@ function DocumentList({
       <div className="document-list__items">
         {documents.map((doc) => (
           <Card key={doc.id} className="document-item" padding="medium">
-            <div className="document-item__icon">
-              {getFileIcon(doc.file || doc.file_url)}
+            <div className="document-item__icon" style={{ display: 'flex', alignItems: 'center', color: '#059669' }}>
+              <FileText size={22} strokeWidth={1.8} />
             </div>
             
             <div className="document-item__info">

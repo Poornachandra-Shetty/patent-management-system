@@ -27,9 +27,10 @@ export async function getRemarks(applicationId) {
     const response = await api.get(API_ENDPOINTS.REVIEWS, {
       params: { application: applicationId },
     })
+    const data = response.data?.results ?? response.data
     return {
       success: true,
-      data: response.data.results,
+      data: Array.isArray(data) ? data : [],
     }
   } catch (error) {
     return {
